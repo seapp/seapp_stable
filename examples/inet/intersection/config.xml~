@@ -1,4 +1,0 @@
-<config>
-  <interface hosts='tl*' address='10.0.1.x' netmask='255.255.255.0'/>
-  <interface hosts='cn' address='10.0.2.1' netmask='255.255.255.0'/>
-</config>

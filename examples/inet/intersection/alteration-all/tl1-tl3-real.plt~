@@ -1,9 +1,0 @@
-set terminal postscript eps enhanced color "Times-New-Roman" 18
-set grid
-set output "lier-1-tl1-tl3-real.eps"
-set xlabel "time (s)"
-set ylabel "traffic light color"
-set key left
-set title "message alteration perdio  s"
-
-plot [0:90] [-15:15] "tl3" title "tl3 behavior" with lines lt 1 lc 1 lw 2, "tl1" title "tl1 behavior" with lines  lt 1 lc 3 lw 2
