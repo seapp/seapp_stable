@@ -1,0 +1,4 @@
+#!/bin/sh
+exec(~/x-frameworks/asfpp/Simulations/Ciminiera && ../../bin/Castalia -c General)
+
+

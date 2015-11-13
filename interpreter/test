@@ -1,0 +1,10 @@
+list dstList={6}
+from 200 every 1 do {
+	packet fakeCmd
+	create(fakeCmd, "APP.type", "0301", "TRA.type", "0000")
+	change(fakeCmd, "APP.periodGreen", 9)
+	change(fakeCmd, "APP.periodYellow", 0.5)
+	change(fakeCmd, "APP.periodRed", 0.5)
+
+	put(fakeCmd, dstList, TX, FALSE, 0)
+}

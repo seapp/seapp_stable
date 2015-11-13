@@ -1,0 +1,3 @@
+To interpret the ASL file
+
+python../../../interpreter/interpreter.py -o traffic-jam.xml traffic-jam-asl

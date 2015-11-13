@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<configuration>
+<Conditional>
+
+<Attack>
+	<start_time>50</start_time>
+	<node>5</node>
+	<var><name>1245</name><value>1245</value><type>NUMBER</type></var>
+	<filter>NET.destinationPort:==:1000:NET.sourcePort:==:1025:AND</filter>
+
+	<action>
+		<name>Change</name>
+		<parameters>packetName:original:field_name:NET.sourcePort:value:1245</parameters>
+	</action>
+	<action>
+		<name>Clone</name>          
+		<parameters>packetName:original:newPacketName:worm</parameters>                        
+	</action>
+	<action>
+		<name>Drop</name>
+		<parameters>packetName:original</parameters>
+	</action>
+	<action>
+		<name>Send</name>
+		<parameters>packetName:worm:delay:0</parameters>
+	</action>
+</Attack>
+
+</Conditional>
+
+</configuration>

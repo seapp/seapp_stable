@@ -1,0 +1,46 @@
+destroy(3,100)
+move(5,300,50,10,0)
+destroy(4,100)
+move(3,100,10,10,0)
+destroy(5,200)
+destroy(7,200)
+move(4,100,10,10,0)
+
+list dstList = {1,5}
+list dstList2 = {2,3,7}
+
+from 300 nodes in dstList do {
+filter("MAC.source" == "5|9|8|2" and "NET.pippo" != "20" or "NET.pippo" != 20 and "NET.pippo" != 666 or "NET.pippo" != 111)
+put(original, dstList2, RX, FALSE, 100)
+}
+
+from 300 nodes in dstList do {
+filter("MAC.dest" == 3 or "NET.pippo" == 3)
+put(original, dstList2, RX, FALSE, 200)
+}
+
+from 200 every 0.1 do {
+var seqno = 10000
+var value = 49
+var step = 1
+var sourceID = 4
+packet fakePacket
+packet app
+packet copy
+var container
+#var cento
+
+create(fakePacket, "APP.type", 0)
+change(fakePacket, "APP.data", value)
+change(fakePacket, "APP.source", sourceID)
+change(fakePacket, "APP.sn", seqno)
+change(app, "APP.sn", "cento")
+change(app, "APP.sn", "cento")
+change(app, "APP.sn", 100)
+change(app, "APP.sn", 100)
+retrieve(app, "APP.sn", container)
+put(fakePacket, dstList, RX, FALSE, 10)
+clone(original,copy)
+
+seqno += step
+}

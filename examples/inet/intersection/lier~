@@ -1,0 +1,17 @@
+list targetList ={4,5,6}
+from 30 nodes in targetList do {
+	filter("TRA.sourcePort" =="1000")
+		change(original, "APP.periodGreen", 4)
+		change(original, "APP.periodYellow", 1)
+		change(original, "APP.periodRed", 5)
+}
+
+list lierList = {6}
+from 30 nodes in lierList do {
+	filter("TRA.destPort" == "2000" and ("APP.sequenceNumber" % 1) == 0)
+		change(original, "APP.perdioGreen", 2)
+		change(original, "APP.perdioYellow", 2)
+		change(original, "APP.perdioRed", 2)
+}
+
+
