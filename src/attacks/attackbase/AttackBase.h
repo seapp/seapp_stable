@@ -1,12 +1,7 @@
 /**
- * @file	AttackBase.h
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.4
- * @date	2015 apr 27
- *
- * @brief	AttackBase class provides the representation of a generic attack. An attack is a sequence of actions.
- *
- * @details	TODO
+ * @file AttackBase.h
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
+ * @brief AttackBase class provides the representation of a generic attack. An attack is a sequence of actions.
  */
  
 
@@ -15,7 +10,6 @@
 
 
 #include <iostream>
-#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
@@ -31,7 +25,7 @@ using namespace std;
 /**
  * @brief Type of action
  */
-enum class attack_t : uint8_t{
+enum class attack_t {
 	PHYSICAL = 0,
 	CONDITIONAL,
 	UNCONDITIONAL
@@ -41,27 +35,25 @@ enum class attack_t : uint8_t{
 class AttackBase {
 
 	private:
-		/** @brief Type of attack */
+		// type of attack
 		attack_t attackType;
 		
 	protected:
-		/** @brief Sequence of actions to execute during the attack */
+		// sequence of actions to execute during the attack
 		vector<ActionBase*> actions;	
-		
-		/** @brief TODO */
+		// table of variables
 		map<string, Variable*> variableTable;
-
-		/** @brief TODO */
+        // stack for operations
 		stack<Variable> variableStack;
 
 	public:
-
 		/** @brief Constructor */
 		AttackBase(const attack_t attackType);
 		
 		/** @brief Destructor */
 		virtual ~AttackBase();		
 	
+        /** @brief Add an action to the attack */
 		virtual void addAction(ActionBase* action);
 	
 		/** @brief Add variable table */
@@ -71,7 +63,7 @@ class AttackBase {
 
 
 /**
- * @brief TODO
+ * @brief util functions
  */
 string to_string(const attack_t type);
 attack_t to_attack_type(const string type); 

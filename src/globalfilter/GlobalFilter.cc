@@ -1,8 +1,6 @@
 /**
  * @file	GlobalFilter.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 14
  */
 
 
@@ -15,24 +13,11 @@
 #include <string>
 
 
-
-
-// XXX includes for fork()
-//#include <stdarg.h> 
-//#include <stdlib.h>    
-//#include <stdio.h>     
-//#include <unistd.h>
-
-// XXX includes for interprocess communication
-//#include <boost/interprocess/ipc/message_queue.hpp>
-//#include <iostream>
-
-
 Define_Module(GlobalFilter);
 
 
-void GlobalFilter::initializeAttacks () {
-
+void GlobalFilter::initializeAttacks()
+{
 	cModule* node = this;
 	Parser* parser = new Parser(node);
 	parser->parseConfigurationFile(attack_t::UNCONDITIONAL, unconditionalAttacks);
@@ -51,40 +36,20 @@ void GlobalFilter::initializeAttacks () {
 
 	// delete parser
 	delete parser;
-
 }
 
 
-void GlobalFilter::initialize () {
-
+void GlobalFilter::initialize()
+{
 	initializeAttacks();
-	
-	// XXX try fork()
-	/*
-	pid_t pid = fork();	
-
-	if(pid==0){
-		system("gnome-terminal -x sh -c 'cd ~/x-frameworks/asfpp/Simulations/Ciminiera && ../../bin/Castalia -c General'");//; exec bash'");
-		//execve("./runcastalia", NULL, NULL);
-		_exit(EXIT_SUCCESS);
-	}
-	else{
-
-	}
-	*/
-
-
 }
 
 
-
-void GlobalFilter::handleMessage (cMessage* msg) {
-
+void GlobalFilter::handleMessage(cMessage* msg)
+{
 	bool isSelfMessage = msg->isSelfMessage();
 
 	if (isSelfMessage) {
-
-
 		string msgName = msg->getName();
 		
 		// handle unconditional attack
@@ -132,20 +97,17 @@ void GlobalFilter::handleMessage (cMessage* msg) {
 			handlePutMessage(msg);
 		}
 		else {
-			EV << "GlobalFilter::handleMessage can handle only PutMsg or selfMsg messages" << endl;
+			EV << "[void GlobalFilter::handleMessage(cMessage*)] GlobalFilter can handle only PutMsg or selfMsg messages" << endl;
 		}
 		
 	}
 	
 	delete msg;
-
 }
 
 
-void GlobalFilter::handlePutMessage (const cMessage* msg) {
-
-
-
+void GlobalFilter::handlePutMessage(const cMessage* msg)
+{
 	cMessage* encapsulatedPacket = nullptr;
 	PutMsg* putMsg = nullptr;
 	vector<int> recipientNodes;
@@ -187,18 +149,16 @@ void GlobalFilter::handlePutMessage (const cMessage* msg) {
 }
 
 
-void GlobalFilter::finishSpecific () {
-
+void GlobalFilter::finishSpecific()
+{
 }
 
 
-GlobalFilter::GlobalFilter () {
-
-	
-
+GlobalFilter::GlobalFilter()
+{
 }
 
 
-GlobalFilter::~GlobalFilter () {
-
+GlobalFilter::~GlobalFilter()
+{
 }

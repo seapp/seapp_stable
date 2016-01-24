@@ -1,55 +1,48 @@
 /**
  * @file	Put.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 14
  */
 
 
 #include "Put.h"
 
-Put::Put (const direction_t direction, const double forwardingDelay, const bool isStatUpdated = false) : ActionBase(action_t::PUT) {
 
+Put::Put(const direction_t direction, const double forwardingDelay, const bool isStatUpdated = false) : ActionBase(action_t::PUT)
+{
 	this->direction = direction;
 	this->forwardingDelay = forwardingDelay;
-	this->isStatUpdated = isStatUpdated;
-	
-	involvedLayer = NONE_LAYER;
-	
+	this->isStatUpdated = isStatUpdated;	
+	involvedLayer = NONE_LAYER;	
 }
 
 
-
-Put::~Put() {
-  
+Put::~Put()
+{  
 }
 
 
-void Put::addRecipientNode(const int recipientNodeId) {
-
-	recipientNodes.push_back(recipientNodeId);
-	
+void Put::addRecipientNode(const int recipientNodeId)
+{
+	recipientNodes.push_back(recipientNodeId);	
 }
 
 
-double Put::getForwardingDelay () const {
-
+double Put::getForwardingDelay() const
+{
 	return forwardingDelay;
-
 }
 
 
-cMessage* Put::execute (cMessage* packetToPut) const {
-
+cMessage* Put::execute(cMessage* packetToPut) const
+{
 	PutMsg* putmsg = new PutMsg(packetToPut, direction, isStatUpdated);
 	putmsg->setForwardingDelay(forwardingDelay);
 
 	for (size_t i = 0; i < recipientNodes.size(); i++) {
 		putmsg->addRecipientNode(recipientNodes[i]);
 	}
-
-	// return putmsg
+	
+    // return putmsg
 	return (cMessage*) putmsg;	
-
 }
 

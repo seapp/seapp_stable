@@ -1,110 +1,16 @@
 /**
  * @file	seapputils.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 mar 01
  */
+ 
  
 #include "seapputils.h"
 #include <sstream>
 #include <map>
 
 
-
-int getPacketLayer(cPacket* packet){
-
-	string packetClassName = packet->getClassName();
-
-	// TODO ad other packets
-
-	//application packet
-
-	if(packetClassName == "cPacket"){
-		return 5;	
-	}
-	
-	if (packetClassName == "TrafficLightPacket"){
-		return 5;
-	}
-	
-	if(packetClassName == "TrafficLightStatus"){
-		return 5;
-	}
-	
-	if(packetClassName == "TrafficLightCmd"){
-		return 5;
-	}
-
-	if(packetClassName == "UDPPacket"){
-		return 4;
-	}
-	
-	if(packetClassName == "IPv4Datagram"){
-		return 3;
-	}
-	
-	if(packetClassName == "PPPFrame"){
-		return 2;
-	}
-	
-	return 5;
-	
-}
-
-int layertoi(const string layer) {
-
-	if(layer == "MAC")
-		return 2;
-	if(layer == "NET")
-		return 3;
-	if(layer == "TRA")
-		return 4;
-	if(layer == "APP")
-		return 5;
-	
-	opp_error("layertoi function doesn't recognize the layer");
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-void setParameterRecursively (cMessage* msg, const string parameterName, const bool parameterValue) {
-
-	bool hasPar = false;
-	cMessage* encapsulatedMsg = msg;
-	
-	while (encapsulatedMsg != nullptr) {
-	
-		hasPar = encapsulatedMsg->hasPar(parameterName.c_str());
-		if (hasPar) {
-			encapsulatedMsg->par(parameterName.c_str()).setBoolValue(parameterValue);
-			encapsulatedMsg = (cMessage*) ((cPacket*) encapsulatedMsg)->getEncapsulatedPacket();		
-		}
-		else {
-			string errorMsg;
-			errorMsg.append("ConditionalAttack::setParameterRecursively can't find parameter: ");
-			errorMsg.append(parameterName);
-			opp_error(errorMsg.c_str());	
-		}
-		
-	}
-	
-	return;
-
-}
-
-
-void tokenize (vector<string>& tokens, const string str, const char delim) {
+void tokenize(vector<string>& tokens, const string str, const char delim)
+{
 	string word;
 	stringstream stream(str);
 	while (getline(stream, word, delim)) {
@@ -113,21 +19,129 @@ void tokenize (vector<string>& tokens, const string str, const char delim) {
 }
 
 
-cPacket* getDeepestEncapsulatedPacket (cPacket* packet) {
+vector<string> tokenize(const string str, const char delim)
+{    
+    vector<string> tokens;
+    string word;
+    stringstream stream(str);
+    // tokenize str upon each occurrence of delim 
+    while (getline(stream, word, delim)) {
+        tokens.push_back(word);
+    }
 
+    return tokens;
+}
+
+
+cPacket* getDeepestEncapsulatedPacket(cPacket* packet)
+{
 	cPacket* encapsulatedPacket = packet;
-	
 	while (encapsulatedPacket != nullptr) {
 		encapsulatedPacket = encapsulatedPacket->getEncapsulatedPacket();
 	}
-	
 	return encapsulatedPacket;
+}
+
+
+int getPacketLayer(cPacket* packet)
+{
+	string packetClassName = packet->getClassName();
+
+	// add other classnames here
+
+	if (packetClassName == "cPacket") {
+		return 5;	
+	}
+	
+	if (packetClassName == "TrafficLightPacket") {
+		return 5;
+	}
+	
+	if (packetClassName == "TrafficLightStatus") {
+		return 5;
+	}
+	
+	if (packetClassName == "TrafficLightCmd") {
+		return 5;
+	}
+
+	if (packetClassName == "UDPPacket") {
+		return 4;
+	}
+    
+    if (packetClassName == "TCPPacket") {
+		return 4;
+	}
+	
+	if (packetClassName == "IPv4Datagram") {
+		return 3;
+	}
+	
+	if (packetClassName == "PPPFrame") {
+		return 2;
+	}
+	
+    opp_error("[int getPacketLayer(cPacket*)] Error, packetClassName not recognized");
 	
 }
 
 
-cPacket* hardCopy (cPacket* packetToCopy) {
+int layertoi(const string layer)
+{
+    if (layer == "APP") {
+		return 5;
+    }
+    else {
+        
+        if (layer == "TRA") {
+            return 4;
+        }
+        else {
+           
+            if (layer == "NET") {
+                return 3;
+            }
+            else {
+                if (layer == "MAC") {
+                    return 2;
+                } 
+                else {
+                    string errorMsg = ("[int layertoi(const string)] Error, layer ");
+                    errorMsg.append(layer);
+                    errorMsg.append(" not recognized; it supports only APP, TRA, NET or MAC.");
+                    opp_error(errorMsg.c_str());
+                }
+            }
+        }
+    }
+}
 
+
+void setParameterRecursively(cMessage* msg, const string parameterName, const bool parameterValue) 
+{
+	bool hasPar = false;
+	cMessage* encapsulatedMsg = msg;
+	
+	while (encapsulatedMsg != nullptr) {
+		hasPar = encapsulatedMsg->hasPar(parameterName.c_str());
+		
+        if (hasPar) {
+			encapsulatedMsg->par(parameterName.c_str()).setBoolValue(parameterValue);
+			encapsulatedMsg = (cMessage*) ((cPacket*) encapsulatedMsg)->getEncapsulatedPacket();		
+		}
+		else {
+			string errorMsg;
+			errorMsg.append("[void setParameterRecursively(cMessage*, const string, const bool)] Error, parameter '");
+			errorMsg.append(parameterName);
+			errorMsg.append("' not found");
+            opp_error(errorMsg.c_str());	
+		}
+	}
+}
+
+
+cPacket* hardCopy (cPacket* packetToCopy)
+{
 	cPacket* layer2Packet = nullptr;
 	cPacket* layer3Packet = nullptr;
 	cPacket* layer4Packet = nullptr;
@@ -224,5 +238,4 @@ cPacket* hardCopy (cPacket* packetToCopy) {
 		}	
 		
 	}
-	
 }

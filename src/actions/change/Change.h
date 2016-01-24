@@ -1,14 +1,9 @@
 /**
  * @file	Change.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.7
- * @date	2015 may 04
- *
  * @brief	Change modifies the value contained in a specified packet field.
- * 
- * @detail	Change modifies the value contained in a specified packet field. The ASL format is LAYER.FIELD_NAME (or PROTOCOL.FIELD_NAME) 
+ * @details	Change modifies the value contained in a specified packet field. The ASL format is LAYER.FIELD_NAME (or PROTOCOL.FIELD_NAME) 
  *			e.g. APP.sourceNodeID or UDP.sourcePort
- *
  */
 
 
@@ -20,7 +15,6 @@
 
 
 class Change : public ActionBase {
-
 	private:
 		string externalInfo;
 		string fieldName;
@@ -55,7 +49,6 @@ class Change : public ActionBase {
 		 * @brief execute the change action
 		 */
 		void execute(cMessage** packetToChange, string value);
-				
 };
 
 #endif

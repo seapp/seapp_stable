@@ -1,12 +1,6 @@
 /**
  * @file	LocalFilter.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.9
- * @date	2015 may 03
- *
- * @brief	TODO
- *
- * @details	TODO
  */
 
 
@@ -17,7 +11,6 @@
 #include <omnetpp.h>
 #include <vector>
 #include <map>
-#include <cstdint>
 
 #include "ConditionalAttack.h"
 
@@ -25,13 +18,13 @@
 using namespace std;
 
 
-class LocalFilter : public cSimpleModule{
+class LocalFilter : public cSimpleModule {
 
 	friend class Destroy;
 	friend class Create;
 
 	private:
-		enum class command_t : uint8_t{
+		enum class command_t {
 			DISCARD = 0,
 			SELFMESSAGE,
 			GLOBALFILTER,
@@ -39,18 +32,16 @@ class LocalFilter : public cSimpleModule{
 			NOATTACK	
 		};
 		
+        // node's status
 		bool isDestroyed;
-		
+        // map input-output gates
 		map<cGate*,cGate*> coupledGates;
-		
+		// conditional attack enabled
 		vector<ConditionalAttack*> enabledConditionalAttacks;
-
+        // injected bytes counter
 		int injectedBytes;
-		
-		// TODO REMOVE because useless
-		map<string, int> targetPacketsClasses;
 
-	private:	
+	private:
 		void forgeInterfaceTable();
 		void initializeGates();
 		void initializeAttacks();
@@ -63,8 +54,15 @@ class LocalFilter : public cSimpleModule{
 		virtual int numInitStages() const { return 5;};
 	
 	public:
+        /**
+         * @brief Constructor.
+         */
 		LocalFilter();
-		virtual ~LocalFilter();
+		
+        /**
+         * @brief Destructor.
+         */
+        virtual ~LocalFilter();
 		
 };
 

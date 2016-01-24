@@ -1,8 +1,6 @@
 /**
  * @file	LocalFilter.c
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.9
- * @date	2015 may 03
  */
 
 
@@ -22,42 +20,24 @@
 #include "InterfaceEntry.h"
 #include "InterfaceTableAccess.h"
 
+
 Define_Module(LocalFilter);
 
 
-// TODO remove because obsolete
-//static bool sortByTime(AttackEntry* a, AttackEntry* b){
-//	
-//	return ( (a->getOccurrenceTime()) < (b->getOccurrenceTime()) );	
-//	
-//}
-
-
-// constructor
-LocalFilter::LocalFilter() {
-
-	EV << "LocalFilter::LocalFilter invoked" << endl;
+LocalFilter::LocalFilter()
+{
 	isDestroyed = false;
 	injectedBytes = 0;
-	EV << "LocalFilter::LocalFilter ended succesfully" << endl;
-
 }
 
 
-// destructor
-LocalFilter::~LocalFilter() {
-
-	EV << "LocalFilter::~LocalFilter invoked" << endl;
-
-	EV << "LocalFilter::~LocalFilter ended succesfully" << endl;
-	
+LocalFilter::~LocalFilter()
+{
 }
 
 
-void LocalFilter::initializeGates(){
-
-	EV << "LocalFilter::initializeGates invoked" << endl;
-
+void LocalFilter::initializeGates()
+{
 	map<string,string> matchingGatesNames;	
 
 	// local filter interposed between layers 5 and 4
@@ -69,16 +49,13 @@ void LocalFilter::initializeGates(){
 	
 	matchingGatesNames.insert( pair<string,string> ("app_udp_inf$i","app_udp_sup$o") );
 	matchingGatesNames.insert( pair<string,string> ("app_udp_sup$i","app_udp_inf$o") );
-
-
+    
 	// local filter interposed between layers 4 and 3
 	matchingGatesNames.insert( pair<string,string> ("udp_net_inf$i","udp_net_sup$o") );
 	matchingGatesNames.insert( pair<string,string> ("udp_net_sup$i","udp_net_inf$o") );
 	
 	matchingGatesNames.insert( pair<string,string> ("tcp_net_inf$i","tcp_net_sup$o") );
 	matchingGatesNames.insert( pair<string,string> ("tcp_net_sup$i","tcp_net_inf$o") );
-
-
 	
 	// local filter interposed between layers 3 and 2
 	matchingGatesNames.insert( pair<string,string> ("net_ppp_inf$i","net_ppp_sup$o") );	
@@ -87,68 +64,57 @@ void LocalFilter::initializeGates(){
 	matchingGatesNames.insert( pair<string,string> ("net_eth_inf$i","net_eth_sup$o") );	
 	matchingGatesNames.insert( pair<string,string> ("net_eth_sup$i","net_eth_inf$o") );	
 
-	
 	// local filter interposed between layers 2 and 1
 	matchingGatesNames.insert( pair<string,string> ("ppp_phy_inf$i","ppp_phy_sup$o") );	
 	matchingGatesNames.insert( pair<string,string> ("ppp_phy_sup$i","ppp_phy_inf$o") );	
 	
-	
 	// local filter and global filter
 	matchingGatesNames.insert( pair<string,string> ("global_filter$i","global_filter$o") );	
-	
 
 	cGate* inputGate;
 	cGate* outputGate;
 	string inputGateName;
 	string outputGateName;
-	for( map<string,string>::iterator iter = matchingGatesNames.begin(); iter!=matchingGatesNames.end(); ++iter ){
-
-		inputGateName.assign(iter->first);
-		
-		if( isGateVector(inputGateName.c_str()) ) {	// vector gate
-			
-		 	for( int i = 0; i < gateSize( inputGateName.c_str() ); i++){
-				
+    
+	for (map<string,string>::iterator iter = matchingGatesNames.begin(); iter!=matchingGatesNames.end(); ++iter) {
+        inputGateName.assign(iter->first);
+        // is gate vector
+		if (isGateVector(inputGateName.c_str())) {
+		 	for (int i = 0; i < gateSize(inputGateName.c_str()); i++) {
 				inputGate = gate(inputGateName.c_str(), i);
-				if( inputGate -> isConnectedOutside() ){	// check if the gate is connected outside
+				// check if the gate is connected outside
+                if (inputGate->isConnectedOutside()) {	
 					outputGateName.assign(iter->second);
 					outputGate = gate(outputGateName.c_str(),i);
-					coupledGates.insert( pair<cGate*,cGate*> (inputGate, outputGate) );
-					EV << "LocalFilter::initializeGates coupled <" << inputGateName << "[" << i << "]," << outputGateName << "[" << i << "]>" << endl;
+					coupledGates.insert(pair<cGate*,cGate*>(inputGate, outputGate));
 				}
-				else{
+				else {
 					continue;
 				}
-			
 			}
-		
 		}
-		else{	// single gate
-			
+		// is a single gate
+        else {
 			inputGate = gate(inputGateName.c_str());
-			if( inputGate->isConnectedOutside() ){	// check if the gate is connected outside
+			// check if the gate is connected outside
+            if (inputGate->isConnectedOutside()) {
 				outputGateName.assign(iter->second);
 				outputGate = gate((iter->second).c_str());
-				coupledGates.insert( pair<cGate*,cGate*> (inputGate, outputGate) );
-				EV << "LocalFilter::initializeGates coupled <" << inputGateName << "," << outputGateName << ">" << endl;
+				coupledGates.insert(pair<cGate*,cGate*> (inputGate, outputGate));
 			}
-			else{
+            
+			else {
 				continue;
 			}
 		
 		}
 	
 	}
-
-	EV << "LocalFilter::initializeGates ended succesfully" << endl;
-	
 }
 
 
-void LocalFilter::initializeAttacks(){
-	
-	EV << "LocalFilter::initializeAttacks invoked" << endl;
-	
+void LocalFilter::initializeAttacks()
+{
 	cModule* node = getParentModule();
 	vector<AttackEntry*> physicalAttacks;
 	vector<AttackEntry*> conditionalAttacks;
@@ -180,67 +146,73 @@ void LocalFilter::initializeAttacks(){
 	}
 
 	// delete parser
-	delete parser;
-	
-	EV << "LocalFilter::initializeAttacks ended succesfully" << endl;
-	
+	delete parser;	
 }
 
 
-LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const {
-
-	if(isDestroyed){
+LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
+{
+    // check if the node is destroyed
+	if (isDestroyed) {
 		return command_t::DISCARD;
 	}
+    // the node is alive
 	else{
-		bool isSelfMessage = msg->isSelfMessage();
-		if(isSelfMessage){
+		// check if msg is a selfMessage
+        bool isSelfMessage = msg->isSelfMessage();
+		if (isSelfMessage) {
 			return command_t::SELFMESSAGE;
 		}
+        // msg is not a selfMessage
 		else{
-			// msg is not a self message, so it is possible to check the arrival gate
+			// check the arrival gate
 			string arrivalGateName = msg->getArrivalGate()->getName();
 			bool isFromGlobalFilter = (arrivalGateName.find("global") != std::string::npos);
-			if(isFromGlobalFilter){
+			
+            // check if msg came from globalfilter
+            if (isFromGlobalFilter) {
 				return command_t::GLOBALFILTER;
 			}
+            
+            // msg does not came from globalfilter
 			else{
 				// conditional attacks are directed only toward packets
 				bool isPacket = msg->isPacket();
-				if(isPacket){
-				
+				if (isPacket) {
 					// add the necessary parameters to execute conditional attacks
 					// add isApplicationPacket parameter
 					bool isFromApp = (std::string(msg->getArrivalGate()->getFullName()).find("app")) != std::string::npos;
 					bool hasParameter = msg->hasPar("isApplicationPacket");
-					if( isFromApp && !hasParameter){
+					if (isFromApp && !hasParameter) {
 						msg->addPar("isApplicationPacket");
 						msg->par("isApplicationPacket").setBoolValue(true);
 					}
 					
 					// add isFiltered parameter
 					hasParameter = msg->hasPar("isFiltered");
-					if( isPacket && !hasParameter ){
+					if (isPacket && !hasParameter) {
 						msg->addPar("isFiltered");
 						msg->par("isFiltered").setBoolValue(false);
 					}
 					
 					// add isToSend parameter
 					hasParameter = msg->hasPar("isToSend");
-					if( isPacket && !hasParameter ){
+					if (isPacket && !hasParameter) {
 						msg->addPar("isToSend");
 						msg->par("isToSend").setBoolValue(false);
 					}
 				
 					bool isConditionalEnabled = enabledConditionalAttacks.size() > 0;
-					if(isConditionalEnabled){
+					if (isConditionalEnabled) {
 						return command_t::CONDITIONAL;
 					}
-					else{
+                    
+					else {
 						return command_t::NOATTACK;
 					}
 				}
-				else{
+				
+                else{
 					return command_t::NOATTACK;
 				}
 			}
@@ -250,8 +222,9 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const {
 }
 
 
-void LocalFilter::forgeInterfaceTable () {
-
+void LocalFilter::forgeInterfaceTable()
+{
+    // check if the interface table exists
 	IInterfaceTable *interfaceTable = InterfaceTableAccess().getIfExists();
 	if (interfaceTable == nullptr) {
 		return;
@@ -265,18 +238,17 @@ void LocalFilter::forgeInterfaceTable () {
 	int numberOfEthInterfaces = 0;
 	int numberOfInterfaces = interfaceTable->getNumInterfaces();
 	
-	// print the interface table
-	for (int i = 0; i < numberOfInterfaces; i++) {  
-		info.clear();
-		interfaceEntry = interfaceTable->getInterface(i);
-		info.append(interfaceEntry->detailedInfo());
-		EV <<"******************** before forgeInterfaceTable() ********************" << endl;
-		EV << info << endl;
-	}
+	// print the original interface table
+	//for (int i = 0; i < numberOfInterfaces; i++) {  
+	//	info.clear();
+	//	interfaceEntry = interfaceTable->getInterface(i);
+	//	info.append(interfaceEntry->detailedInfo());
+	//	EV <<"******************** before forgeInterfaceTable() ********************" << endl;
+	//	EV << info << endl;
+	//}
 
-	// couple network-layer gate index with NIC
+	// couple network-layer gate index having NIC
 	for (int i = 0; i < numberOfInterfaces; i++){
-	
 		interfaceName.clear();
 		interfaceEntry = interfaceTable->getInterface(i);
 		interfaceName = interfaceEntry->getName();
@@ -287,7 +259,7 @@ void LocalFilter::forgeInterfaceTable () {
 		// 3. radio
 		// 4. lo0
 				
-		// is eht interface
+		// is eth interface
 		if (interfaceName.find("eth") != string::npos) {
 			// remove "eth" and obtain the gate index
 			interfaceName.erase(0,3);
@@ -306,47 +278,40 @@ void LocalFilter::forgeInterfaceTable () {
 			// set the right gate index in the interface table
 			interfaceEntry->setNetworkLayerGateIndex(gateIndex);		
 		}
-
-
+        
 		// TODO add other interfaces here
 	
 	}
 
 	// print the forged interface table	
-	for (int i =0; i < numberOfInterfaces; i++) {
-		info.clear();
-		interfaceEntry = interfaceTable->getInterface(i);
-		info.append(interfaceEntry->detailedInfo());
-		EV << "******************** after forgeInterfaceTable() ********************" << endl;
-		EV << info << endl;
-		
-	}	
-
+	//for (int i =0; i < numberOfInterfaces; i++) {
+	//	info.clear();
+	//	interfaceEntry = interfaceTable->getInterface(i);
+	//	info.append(interfaceEntry->detailedInfo());
+	//	EV << "******************** after forgeInterfaceTable() ********************" << endl;
+	//	EV << info << endl;
+	//}	
 }
 
 
-void LocalFilter::initialize(int stage) {
-
-	// wait the initialization of all the NICs
-	if(stage == 4){
+void LocalFilter::initialize(int stage)
+{
+	// wait the initialization of NICs
+	if (stage == 4) {
 		forgeInterfaceTable();
 		initializeGates();
 		initializeAttacks();
 	}
-
 }
 
 
-
-
-void LocalFilter::handleMessage(cMessage* msg) {
-		
-	EV << "LocalFilter::handleMessage has intercepted a message" << endl;
-
-	double delay = 0.0;	
-	
+void LocalFilter::handleMessage(cMessage* msg)
+{		
+	//EV << "LocalFilter::handleMessage has intercepted a message" << endl;
+    
+    double delay = 0.0;	
 	// choose the action to perform
-	switch( planOperation(msg) ){
+	switch (planOperation(msg)) {
 	
 		// the node is destroyed then discard all messages
 		case command_t::DISCARD:{
@@ -382,7 +347,7 @@ void LocalFilter::handleMessage(cMessage* msg) {
 		
 		
 		case command_t::GLOBALFILTER:{
-			EV << "----------------------------------------- PUTMSG FROM GLOBAL FILTER" << endl;
+			//EV << "----- ----- ----- PUTMSG FROM GLOBAL FILTER" << endl;
 
 			// local filter receives only PutReq
 			if (isPutReq(msg)) {
@@ -397,7 +362,7 @@ void LocalFilter::handleMessage(cMessage* msg) {
 				// check if the carried msg is a packet
 				carriedPacket = putReq->getMsg();
 				if (!carriedPacket->isPacket()) {
-					EV << "LocalFilter::handleMessage the received PutMsg doesn't carry a packet" << endl;
+					//EV << "LocalFilter::handleMessage the received PutMsg doesn't carry a packet" << endl;
 					delete msg;
 					return;
 				}
@@ -408,31 +373,26 @@ void LocalFilter::handleMessage(cMessage* msg) {
 				
 				// forge the sending data
 				//forgeSendingData(carriedPacket);
-							
-				/*
-				direction = putReq->getDirection();
+				//direction = putReq->getDirection();
 				// handle the carriedPacket
-				switch (direction) {
-				
-					case direction_t::TX: {
-					
-						cGate* arrivalGate;
-						arrivalGate = carriedPacket->getArrivalGate();
-						send(carriedPacket, coupledGates[arrivalGate]); 
-						break;
-						// call forgeSendingData!!!
-					
-					}
-					
-					case direction_t::RX: {
-					
-					
-					
-						break;
-					}			
-				
-				}
-				*/
+				//switch (direction) {
+				//
+				//	case direction_t::TX: {
+				//	
+				//		cGate* arrivalGate;
+				//		arrivalGate = carriedPacket->getArrivalGate();
+				//		send(carriedPacket, coupledGates[arrivalGate]); 
+				//		break;
+				//		// call forgeSendingData!!!
+				//	
+				//	}
+				//	
+				//	case direction_t::RX: {
+				//		
+                //      break;
+				//	}			
+				//
+				//}
 				
 				string outputGateOverallName;				
 				string outputGateName;
@@ -466,21 +426,19 @@ void LocalFilter::handleMessage(cMessage* msg) {
 			vector<cMessage*> generatedPackets;
 			vector<double> delays;
 			
-			EV << "---------- ---------- ---------- ---------- ---------- entering CONDITIONAL case " << endl;
+			//EV << "----- ----- ----- entering 'conditional' case" << endl;
 			
 			// perform all enabled conditional attacks
-			for(size_t i = 0; i < enabledConditionalAttacks.size(); i++){
+			for (size_t i = 0; i < enabledConditionalAttacks.size(); i++) {
 						
 				generatedPackets.clear();
 				delays.clear();
-				
-				EV << "---------- ---------- ---------- ---------- ---------- enabledConditionalAttacks size " << enabledConditionalAttacks.size() << endl;							
-				EV << "---------- ---------- ---------- ---------- ---------- performing Conditional attacks " << endl;
+
+				//EV << "----- ----- ----- performing Conditional attacks" << endl;
 				
 				// packet filter match
-				if(enabledConditionalAttacks[i]->isMatchingPacketFilter( (cPacket*) msg )){
-	
-					EV << "---------- ---------- ---------- ---------- ---------- packet filter match " << endl;
+				if (enabledConditionalAttacks[i]->matchPacketFilter(msg)) {
+					//EV << "----- ----- ----- packet filter match" << endl;
 					
 					enabledConditionalAttacks[i]->execute(&msg, generatedPackets, delays, delay);								
 					
@@ -527,9 +485,6 @@ void LocalFilter::handleMessage(cMessage* msg) {
 										
 								generatedPackets[i]->par("isToSend").setBoolValue(false);	
 								
-								// XXX test partial solution, remove it
-								//cGate* sendGate = gate("app_udp_inf$o", 0);
-								//send(generatedPackets[i], sendGate);
 								arrivalGate = generatedPackets[i]->getArrivalGate();
 								sendDelayed(generatedPackets[i], delays[i], coupledGates[arrivalGate]); 
 								
@@ -540,7 +495,7 @@ void LocalFilter::handleMessage(cMessage* msg) {
 					return;
 					
 				}
-				// not match packet filter
+				// packet filter does not match
 				else{
 					arrivalGate = msg->getArrivalGate();
 					send(msg, coupledGates[arrivalGate]);
@@ -560,60 +515,57 @@ void LocalFilter::handleMessage(cMessage* msg) {
 			
 	}
 	
-	EV << "LocalFilter::handleMessage ended succesfully" << endl;
-	
+	// EV << "LocalFilter::handleMessage ended succesfully" << endl;
 }
 
 
-void LocalFilter::forgeSendingData (cMessage* msg) {
-
+void LocalFilter::forgeSendingData (cMessage* msg)
+{
 	bool hasParameter = msg->hasPar("outputGate");
+	if (hasParameter == true) {
+        string outputGateOverallName;
+        vector<string> tokens;
+        string outputGateName;
+        int outputGateIndex;
+        cGate* outputGate;
+        cGate* inputGate;
+        int inputGateId;
+        cGate* previousGate;
+        int previousGateId;
+        cModule* previousModule;
 
-	if ( hasParameter == true ) {
-	
-			string outputGateOverallName;
-			vector<string> tokens;
-			string outputGateName;
-			int outputGateIndex;
-			cGate* outputGate;
-			cGate* inputGate;
-			int inputGateId;
-			cGate* previousGate;
-			int previousGateId;
-			cModule* previousModule;
+        // get the output gate overall name
+        outputGateOverallName.assign(msg->par("outputGate").stringValue());
 
-			// get the output gate overall name
-			outputGateOverallName.assign(msg->par("outputGate").stringValue());
+        // find the output gate
+        tokenize(tokens, outputGateOverallName, '[');
+        outputGateName.assign(tokens[0]);
+        // remove last char ']'
+        tokens[1].pop_back();
+        outputGateIndex = atoi(tokens[1].c_str());
+        outputGate = gate(outputGateName.c_str(), outputGateIndex);
 
-			// find the output gate
-			tokenize(tokens, outputGateOverallName, '[');
-			outputGateName.assign(tokens[0]);
-			// remove last char ']'
-			tokens[1].pop_back();
-			outputGateIndex = atoi(tokens[1].c_str());
-			outputGate = gate(outputGateName.c_str(), outputGateIndex);
-
-			// find the relative input gate
-			map<cGate*, cGate*>::iterator iter;
-			for (iter = coupledGates.begin(); iter != coupledGates.end(); ++iter) {
-				if (iter->second == outputGate) {
-					inputGate = iter->first;
-					break;
-				}
-			}
-			
-			inputGateId = inputGate->getId();
-			
-			// find the previous module (i.e. the module connected to the input gate)
-			previousGate = inputGate->getPreviousGate();
-			previousModule = check_and_cast<cModule*>(previousGate->getOwner());
-			previousGateId = previousGate->getId();
-			
-			// forge sending data
-			msg->setSentFrom(previousModule, previousGateId, simTime() );
-			msg->setArrival(this, inputGateId);
-		
+        // find the relative input gate
+        map<cGate*, cGate*>::iterator iter;
+        for (iter = coupledGates.begin(); iter != coupledGates.end(); ++iter) {
+            if (iter->second == outputGate) {
+                inputGate = iter->first;
+                break;
+            }
+        }
+        
+        inputGateId = inputGate->getId();
+        
+        // find the previous module (i.e. the module connected to the input gate)
+        previousGate = inputGate->getPreviousGate();
+        previousModule = check_and_cast<cModule*>(previousGate->getOwner());
+        previousGateId = previousGate->getId();
+        
+        // forge sending data
+        msg->setSentFrom(previousModule, previousGateId, simTime() );
+        msg->setArrival(this, inputGateId);
 	}
+    
 	else {
 		EV << "LocalFilter::forgeSendingData hasn't find the outputGate parameter or the parameter is 'none'" << endl;
 	}

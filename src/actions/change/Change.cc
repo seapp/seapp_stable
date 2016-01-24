@@ -21,10 +21,10 @@
 #include "IdealAirFrame_m.h"
 #include "AirFrame_m.h"
 
-// TODO change value in valueName -> because value is the name of the variable in the variableTable which stores the real value
+// TODO change value in valueName
 
-Change::Change(const string fieldName, const string value) : ActionBase(action_t::CHANGE) {
-
+Change::Change(const string fieldName, const string value) : ActionBase(action_t::CHANGE)
+{
 	vector<string> tokens;
 	tokenize(tokens, fieldName, '.');
 
@@ -39,44 +39,40 @@ Change::Change(const string fieldName, const string value) : ActionBase(action_t
 
 	this->fieldName.assign(tokens[1]);
 	this->value.assign(value);	
-
 }
 
 
-Change::~Change() {
-  
+Change::~Change()
+{  
 }
 
 
-string Change::getFieldName() const {
-
+string Change::getFieldName() const
+{
 	return fieldName;
-
 }
 
 
-string Change::getValue() const {
-
+string Change::getValue() const
+{
 	return value;
-
 }
 
 
-void Change::execute(cMessage** packetToChange, string value) {
-
-	// change the value of the packet field
+void Change::execute(cMessage** packetToChange, string value)
+{
+	// change the value of the packet's field
 	if (externalInfo == "none") {
 		executeOnField(packetToChange, value);
 	}
 	else {
 		executeOnExternalInfo(packetToChange, value);		
-	}
-	
+	}	
 }
 	
 	
-void Change::executeOnField (cMessage** packetToChange, string value) {
-
+void Change::executeOnField(cMessage** packetToChange, string value)
+{
 	cClassDescriptor* descriptor; 
 	cMessage* substitutePacket = nullptr;
 	cMessage* encapsulatedPacket = nullptr;
@@ -89,7 +85,7 @@ void Change::executeOnField (cMessage** packetToChange, string value) {
 	while (packetLayer < involvedLayer) {
 		encapsulatedPacket = ((cPacket*) encapsulatedPacket)->getEncapsulatedPacket();
 		if (encapsulatedPacket == nullptr) {
-			string errorMsg = "Change::execute can't find the right encapsulated packet, check your packet filter specifications";
+			string errorMsg = "[void Change::execute(cMessage**, string)] Error, can't find the right encapsulated packet, check your packet filter specifications";
 			opp_error(errorMsg.c_str());
 		}
 		packetLayer = getPacketLayer((cPacket*)encapsulatedPacket);
@@ -99,8 +95,10 @@ void Change::executeOnField (cMessage** packetToChange, string value) {
 	fieldIndex = descriptor->findField(encapsulatedPacket, fieldName.c_str());
 	
 	// can't find the specified field
-	if(fieldIndex == -1){
-		string errorMsg = "Change::execute can't find the field " + fieldName;
+	if (fieldIndex == -1) {
+		string errorMsg = "[void Change::execute(cMessage**, string)] Error, can't find the field '";
+        errorMsg.append(fieldName);
+        errorMsg.append("'");
 		opp_error(errorMsg.c_str());
 	}
 
@@ -110,21 +108,18 @@ void Change::executeOnField (cMessage** packetToChange, string value) {
 	// replace the original packet with his modified clone	
 	delete *packetToChange;
 	*packetToChange = substitutePacket;
-	
 }
 
-
 	
-void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
-	
+void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
+{	
 	// change control info fields
 	if (externalInfo == "controlInfo") {
-	
 		string className;
 		cObject* controlInfo = (*packetToChange)->getControlInfo();
 		
 		if (controlInfo == nullptr) {
-			opp_error("Change::executeOnExternalInfo can't find the controlInfo object");
+			opp_error("[void Change::executeOnExternalInfo(cMessage**, string)] Error, can't find the controlInfo object");
 		}
 		
 		// get class name of the controlinfo object
@@ -165,7 +160,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -186,7 +181,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 			
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -207,7 +202,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 			
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -215,9 +210,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 			
 			// UDPCloseCommand:UDPControlInfo
 			if (className == "UDPCloseCommand") {
-			
 				// UDPCloseCommand hasn't fields
-			
 			}
 			
 			// UDPDataIndication:UDPControlInfo
@@ -266,7 +259,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -300,13 +293,13 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 			
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
 			}
 				
-			// XXX insert here other UDP control info
+			// TODO insert here other UDP control info
 		
 		}
 		
@@ -327,7 +320,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 				
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -348,7 +341,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 				
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -411,7 +404,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 			
 				
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -455,7 +448,7 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 				
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
@@ -486,16 +479,14 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 				}
 				
 				string errorMsg;
-				errorMsg.assign("Change::executeOnExternalInfo field ");
+				errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, field ");
 				errorMsg.append(fieldName);
 				errorMsg.append(" not found");
 				opp_error(errorMsg.c_str());
 			}
 			
-			// XXX insert here other TCP commands
+			// TODO insert here other TCP commands
 		}
-		
-		
 		
 		// handle IPv4ControlInfo
 		if (className.find("IPv4") != std::string::npos) {
@@ -587,26 +578,20 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 					return;
 				}
 			
-			
 			}
-			
-
-			
+        
 			if (className == "IPv4RoutingDecision") {
 				// not supported yet
-				string errorMsg = "Change::executeOnExternalField does not support IPv4RoutingDecision Control Info";
+				string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, IPv4RoutingDecision ControlInfo not supported";
 				opp_error(errorMsg.c_str());
 			}
 				
 			string errorMsg;
-			errorMsg.assign("Change::executeOnExternalInfo (IPv4) field ");
+			errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, IPv4 field ");
 			errorMsg.append(fieldName);
 			errorMsg.append(" not found");
-			opp_error(errorMsg.c_str());			
-
-		
+			opp_error(errorMsg.c_str());
 		}
-		
 		
 		// handle Ieee802
 		if (className.find("Ieee802") != std::string::npos) {
@@ -661,38 +646,25 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 					return;
 				}
 				
-			
 			}
-			
-
 			
 			if (className == "IPv4RoutingDecision") {
 				// not supported yet
-				string errorMsg = "Change::executeOnExternalField does not support IPv4RoutingDecision Control Info";
+				string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, IPv4RoutingDecision ControlInfo is not supported";
 				opp_error(errorMsg.c_str());
 			}
 				
 			string errorMsg;
-			errorMsg.assign("Change::executeOnExternalInfo (IPv4) field ");
+			errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, IPv4 field ");
 			errorMsg.append(fieldName);
 			errorMsg.append(" not found");
 			opp_error(errorMsg.c_str());			
-
-		
 		}
 		
-		
-		
-		
-		
-		
-		// XXX insert here control info of other protocols
+		// TODO insert here control info of other protocols
 		
 		return;
 	}
-	
-	
-	
 	
 	// change sending fields	
 	if (externalInfo == "sending") {
@@ -704,13 +676,12 @@ void Change::executeOnExternalInfo (cMessage** packetToChange, string value) {
 			(*packetToChange)->par("outputGate").setStringValue(value.c_str());		
 			return;
 		}
-		string errorMsg = "Change::execute can't find the specified field in sending";
+		string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, can't find the specified field in sending";
 		opp_error(errorMsg.c_str());
 	}
 	
-	string errorMsg = "Change::execute can't recognize the specified external info";
+	string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, can't recognize the specified external info";
 	opp_error(errorMsg.c_str());
-			
 }
 
 

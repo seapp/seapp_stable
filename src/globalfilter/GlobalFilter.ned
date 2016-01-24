@@ -12,9 +12,9 @@ simple GlobalFilter {
 	bool collectTraceInfo = default (false);
 	bool evaluateAttacks = default (false);
 
-//string applicationName = default("");
-//string routingProtocolName = default("");
-//string macProtocolName = default("");
+    //string applicationName = default("");
+    //string routingProtocolName = default("");
+    //string macProtocolName = default("");
 
 	string applicationName = default("");
 	string layer4ProtocolName = default("");

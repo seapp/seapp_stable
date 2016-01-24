@@ -1,11 +1,7 @@
 /**
- * @file	Clone.h
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 apr 14
- *
- * @brief	The Clone class creates a perfect copy of a given packet.
- *
+ * @file Clone.h
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
+ * @brief The Clone class creates a perfect copy of a given packet.
  */
 
 

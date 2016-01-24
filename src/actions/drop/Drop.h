@@ -1,12 +1,7 @@
 /**
- * @file	Drop.h
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 apr 09
- *
- * @brief	TODO
- *
- * @details	TODO
+ * @file Drop.h
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
+ * @brief Drop packets.
  */
 
 
@@ -18,9 +13,6 @@
 
 
 class Drop : public ActionBase {
-
-	private:
-		
 
 	public:
 	
@@ -35,7 +27,7 @@ class Drop : public ActionBase {
 		virtual ~Drop();
 
 		/**
-		 * @brief TODO
+		 * @brief Execute the drop action.
 		 */
 		void execute(cMessage** packet) const;
 };

@@ -1,12 +1,6 @@
 /**
  * @file	GlobalFilter.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 14
- *
- * @brief	TODO
- *
- * @details	TODO
  */
 
 
@@ -17,13 +11,12 @@
 #include <omnetpp.h>
 #include <vector>
 
-//#include "UnconditionalAttacks.h"
 #include "AttackEntry.h"
 
 using namespace std;
 
 
-class GlobalFilter : public cSimpleModule{
+class GlobalFilter : public cSimpleModule {
 
 	private:
 		vector<AttackEntry*> unconditionalAttacks;
@@ -41,9 +34,6 @@ class GlobalFilter : public cSimpleModule{
 	public:
 		GlobalFilter();
 		virtual ~GlobalFilter();
-		
-	
-
 };
 
 #endif

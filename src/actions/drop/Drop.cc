@@ -1,32 +1,26 @@
 /**
  * @file	Drop.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 apr 09
  */
 
 
 #include "Drop.h"
 
 
-Drop::Drop () : ActionBase (action_t::DROP) {
-
+Drop::Drop() : ActionBase(action_t::DROP)
+{
 	// the packet filter matching is a sufficient condition to perform the Drop action, further infos are useless
 	involvedLayer = NONE_LAYER;
-
 }
 
 
-Drop::~Drop () {
-
+Drop::~Drop()
+{
 }
 
 
-void Drop :: execute(cMessage** packet) const{
-
+void Drop::execute(cMessage** packet) const
+{
 	delete *packet;
 	*packet = nullptr;
-
 }
-
-

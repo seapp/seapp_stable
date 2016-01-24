@@ -1,11 +1,7 @@
 /**
  * @file	Parser.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.7
- * @date	2015 may 13
- *
  * @brief	Parser class makes possible to parse the xml file that contains the attack description.
- *
  * @details	Parser class relies on the xml++ library. It is used by LocalFilter modules and the GlobalFilter module, 
  *			to initialize the data structures that are used to perform physical, conditional and unconditional attacks.
  */
@@ -14,8 +10,9 @@
 #ifndef PARSE_H
 #define PARSE_H
 
+
 #include <iostream>
-#include <omnetpp.h>
+#include "omnetpp.h"
 #include <libxml++/libxml++.h>
 #include <cstdint>
 #include <string>
@@ -28,17 +25,16 @@
 #include "AttackBase.h"
 #include "AttackEntry.h"
 
+
 using namespace std;
+
 
 // TODO remove this
 // declare LocalFilter class to avoid cyclic dependency
 class LocalFilter;
 
 
-
-/** 
- * @brief 	Tag types
- */ 
+// tag types
 enum class tag_t : uint8_t{
 	ACTION = 0,
 	ATTACK,
@@ -62,21 +58,16 @@ enum class tag_t : uint8_t{
 class Parser{
 
 	private:
-		// TODO remove xmlConfigurationFileName and nodeID, retrievable by using node
-		//string xmlConfigurationFileName;
-		//int nodeID;
-		
-		cModule* node;
+		// owner of the parser
+        cModule* node;
 
 	private:
-	
 		/**
 		 * @brief	Initialize an Attack object
 		 */
 		bool initializeAttack(const xmlpp::Node* nodeLevel2, AttackBase* attack, SimTime& occurrenceTime);
 		
 	public:
-	
 		/**
 		 * @brief	Constructor 
 		 * @param	TODO
@@ -98,12 +89,7 @@ class Parser{
 };
 
 
-string get_node_value(const xmlpp::Node* node);
-
-/**
- * @brief
- */
- 
+string get_node_value(const xmlpp::Node* node); 
 string to_string(const tag_t type);
 tag_t to_tag_t(const string type);
 

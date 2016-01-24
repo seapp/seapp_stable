@@ -1,13 +1,6 @@
 /**
  * @file	Retrieve.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 15
- *
- * @brief	
- *
- * @detail	
- * 
  */
 
 

@@ -1,13 +1,6 @@
 /**
  * @file	SEAPPExpression.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 may 13
- *
- * @brief	
- *
- * @detail	
- * 
  */
 
 
@@ -33,19 +26,18 @@ class SEAPPExpression : public ActionBase {
 
 	public:
 		/**
-		 * @brief	Constructor
+		 * @brief Constructor
 		 */
 		SEAPPExpression(const vector<string> expressionItems);
 	
 		/**
-		 * @brief	Destructor
+		 * @brief Destructor
 		 */
 		virtual ~SEAPPExpression();
 	
 		/**
-		 * @brief	Execute expression action
-		 *
-		 * @detail	The execution of an expression relies on the variable table and variable stack, provided by the calling object.
+		 * @brief Execute expression action
+		 * @details The execution of an expression relies on the variable table and variable stack, provided by the calling object.
 		 *  		The former contains variables considered by the expression, while the latter is used to actually execute the expression.
    		 *			At the end, the variable stored in the variable table and aimed at containing the expression result is updated
    		 */

@@ -1,17 +1,7 @@
 /**
- * @file	Destroy.h
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.4
- * @date	2015 may 13
- *
- * @brief	Destroy class extends ActionBase. Destroy class makes possible the destruction of a node.
- *
- * @details	Destroy class is instantiated by the Parser object in the LocalFilter::attacksInitialization method.
- *			The Parser object calls the Destroy constuctor and passes to it the reference to the isDestroyed bool member
- *			of the LocalFilter object.
- *			The Destroy constructor initialize the isDestroyed bool pointer member with this reference.
- *			The destruction of the node is carried out by the execute method, which sets the bool variable pointed 
- *			by the pointer isDestroyed.
+ * @file Destroy.h
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
+ * @brief Destroy class extends ActionBase. Destroy class makes possible the destruction of a node.
  */
 
 
@@ -31,11 +21,7 @@ class Destroy : public ActionBase {
 	
 		/**
 		 * @brief Constructor.
-		 * @param [in] isDestroyed pointer to the bool variable isDestroyed of a LocalFilter object.
-		 *
-		 * @detail TODO Destroy constructor is called by the Parser object in the LocalFilter::attacksInitialization method.
-		 * The Parser object passes to it the reference to the isDestroyed bool member of the LocalFilter object.
-		 * The Destroy constructor initialize the isDestroyed bool pointer member with this reference.
+		 * @param isDestroyed Pointer-to the bool variable isDestroyed of a LocalFilter object.
 		 */
 		Destroy(cModule* targetNode);
 		
@@ -45,9 +31,7 @@ class Destroy : public ActionBase {
 		virtual ~Destroy();
 
 		/**
-		 * @brief Destroys the node.
-		 * 
-		 * @detail Destroys the node by setting the bool variable pointed by isDestroyed.
+		 * @brief Destroy the node.
 		 */
 		void execute() const;
 };

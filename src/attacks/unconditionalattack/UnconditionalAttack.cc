@@ -1,8 +1,6 @@
 /**
  * @file	UnconditionalAttack.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 15
  */
 
 
@@ -17,44 +15,39 @@
 #include "SEAPPExpression.h"
 #include "Create.h"
 
-UnconditionalAttack::UnconditionalAttack () : AttackBase (attack_t::UNCONDITIONAL) {
-
-	EV << "UnconditionalAttack::UnconditionalAttack invoked" << endl;
-
+UnconditionalAttack::UnconditionalAttack() : AttackBase (attack_t::UNCONDITIONAL)
+{
+	//EV << "UnconditionalAttack::UnconditionalAttack invoked" << endl;
 }
 
 
-UnconditionalAttack::~UnconditionalAttack  () {
-
-	EV << "UnconditionalAttack::~UnconditionalAttack invoked" << endl;
-
+UnconditionalAttack::~UnconditionalAttack()
+{
+	//EV << "UnconditionalAttack::~UnconditionalAttack invoked" << endl;
 }
 
 
-void UnconditionalAttack::setFrequency (double frequency) {
-	
-	this->frequency = frequency;
-
+void UnconditionalAttack::setFrequency(double frequency)
+{
+    this->frequency = frequency;
 }
 
 
-double UnconditionalAttack::getFrequency () const {
-	
+double UnconditionalAttack::getFrequency() const
+{	
 	return frequency;
-
 }
 
 
-void UnconditionalAttack::addAction (ActionBase* action) {
-
+void UnconditionalAttack::addAction(ActionBase* action)
+{
 	actions.push_back(action);
-		
 }
 
 
-void UnconditionalAttack::execute (vector<cMessage*> &putMessages) {
-
-	EV << "UnconditionalAttack::execute invoked" << endl;
+void UnconditionalAttack::execute(vector<cMessage*> &putMessages)
+{
+	//EV << "UnconditionalAttack::execute invoked" << endl;
 
 	map<string,int>  packetTable;
 	vector<cMessage*> generatedMessages;
@@ -150,8 +143,6 @@ void UnconditionalAttack::execute (vector<cMessage*> &putMessages) {
 
 				change->execute(targetMessage, value);
 			
-				EV << " ------------------------------------------- CHANGE EXECUTED" << endl;
-			
 				break;
 			}
 
@@ -224,32 +215,28 @@ void UnconditionalAttack::execute (vector<cMessage*> &putMessages) {
 								
 			}
 
-			// Send, not recognized by unconditional attacks			
+			// Send not recognized by unconditional attacks			
 			case action_t::SEND: {
-				string errorMsg = "UnconditionalAttack::execute doesn't recognize the Send action, check the Attack Configuration File";
-				opp_error(errorMsg.c_str());
-				break;
+				opp_error("[void UnconditionalAttack::execute(vector<cMessage*> &)] can't recognize the Send action, check the Attack Configuration File");
+				return; // never executed
 			}
 			
-			// Send, not recognized by unconditional attacks			
+			// Destroy not recognized by unconditional attacks			
 			case action_t::DESTROY: {
-				string errorMsg = "UnconditionalAttack::execute doesn't recognize the Send action, check the Attack Configuration File";
-				opp_error(errorMsg.c_str());
-				break;
+				opp_error("[void UnconditionalAttack::execute(vector<cMessage*> &)] can't recognize the Destroy action, check the Attack Configuration File");
+				return; // never executed
 			}
 
-			// Send, not recognized by unconditional attacks			
+			// Move not recognized by unconditional attacks			
 			case action_t::MOVE: {
-				string errorMsg = "UnconditionalAttack::execute doesn't recognize the Move action, check the Attack Configuration File";
-				opp_error(errorMsg.c_str());
-				break;
+				opp_error("[void UnconditionalAttack::execute(vector<cMessage*> &)] can't recognize the Move action, check the Attack Configuration File");
+				return; // never executed
 			}
 
-			// Send, not recognized by unconditional attacks			
+			// Fakeread not recognized by unconditional attacks			
 			case action_t::FAKEREAD: {
-				string errorMsg = "UnconditionalAttack::execute doesn't recognize the Fakeread action, check the Attack Configuration File";
-				opp_error(errorMsg.c_str());
-				break;
+				opp_error("[void UnconditionalAttack::execute(vector<cMessage*> &)] can't recognize the Fakeread action, which is not supported by seapp");
+				return; // never executed
 			}
 
 		}

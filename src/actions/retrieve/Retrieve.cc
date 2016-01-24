@@ -1,8 +1,6 @@
 /**
  * @file	Retrieve.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 15
  */
 
 
@@ -10,8 +8,8 @@
 #include "seapputils.h"
 
 
-Retrieve::Retrieve (const string fields, const string variableName) : ActionBase(action_t::RETRIEVE) {
-
+Retrieve::Retrieve(const string fields, const string variableName) : ActionBase(action_t::RETRIEVE)
+{
 	// fields has the pattern "layer.field"
 	vector<string> tokens;
 	tokenize(tokens, fields, '.');
@@ -19,32 +17,29 @@ Retrieve::Retrieve (const string fields, const string variableName) : ActionBase
 	involvedLayer = layertoi(tokens[0]);
 
 	this->fieldName = tokens[1];
-	this->variableName = variableName;
-	
+	this->variableName = variableName;	
 }
 
 
-Retrieve::~Retrieve() {
-  
+Retrieve::~Retrieve()
+{  
 }
 
 
-string Retrieve::getFieldName () const {
-
+string Retrieve::getFieldName() const
+{
 	return fieldName;
-
 }
-		
 
-string Retrieve::getVariableName () const {
 
+string Retrieve::getVariableName() const
+{
 	return variableName;
-
 }
 
 
-Variable* Retrieve::execute (cMessage* msg) const {
-
+Variable* Retrieve::execute(cMessage* msg) const
+{
 	cClassDescriptor* descriptor; 
 	int fieldIndex;
 	string value;
@@ -59,12 +54,12 @@ Variable* Retrieve::execute (cMessage* msg) const {
 	int packetLayer = getPacketLayer((cPacket*) encapsulatedMsg);
 
 	// retrieve the encapsulated packet belonging to the right layer
-	while ( packetLayer < involvedLayer  ) {
+	while (packetLayer < involvedLayer) {
 	
 		encapsulatedMsg = (cMessage*) ((cPacket*) encapsulatedMsg)->getEncapsulatedPacket();
 		
 		if(encapsulatedMsg == nullptr){
-			string errorMsg = "Retrieve::Execute tryed to access in a layer not contained in this packet, check your packet filter";
+			string errorMsg = "[Variable* Retrieve::execute(cMessage*)] Error, tryed to access in a layer not contained in this packet, check your packet filter";
 			opp_error(errorMsg.c_str());
 		}
 		
@@ -76,7 +71,7 @@ Variable* Retrieve::execute (cMessage* msg) const {
 	
 	// fieldName doesn't exist
 	if (fieldIndex == -1) {
-		string errorMsg = "Retrieve::Execute can't find ";
+		string errorMsg = "[Variable* Retrieve::Execute(cMessage*)] Error, can't find ";
 		errorMsg.append(fieldName);
 		errorMsg.append(", the field doesn't exist");
 		opp_error(errorMsg.c_str());
@@ -86,9 +81,4 @@ Variable* Retrieve::execute (cMessage* msg) const {
 	value = descriptor->getFieldAsString(encapsulatedMsg, fieldIndex, 0);
 
 	return new Variable(value, get_variable_format(value));
-
 }
-		
-
-
-

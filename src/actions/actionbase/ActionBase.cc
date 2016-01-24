@@ -1,56 +1,49 @@
 /**
  * @file	ActionBase.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.4
- * @date	2015 mar 16
  */
 
 
 #include "ActionBase.h"
 
 
-ActionBase::ActionBase(const action_t actionType){
-	
-	this->actionType = actionType;
-	
+ActionBase::ActionBase(const action_t actionType)
+{	
+	this->actionType = actionType;	
 }
 
 
-ActionBase::~ActionBase(){
-
+ActionBase::~ActionBase()
+{
 }		
 
 
-action_t ActionBase::getActionType() const{
-
+action_t ActionBase::getActionType() const
+{
 	return actionType;
-
 }
 
 
-int ActionBase::getInvolvedLayer() const{
-
+int ActionBase::getInvolvedLayer() const
+{
 	return involvedLayer;
-
 }
 
 
-void ActionBase::setPacketName(const string packetName){
-
+void ActionBase::setPacketName(const string packetName)
+{
 	this->packetName.assign(packetName);
-
 }
 
 
-string ActionBase::getPacketName() const{
-
+string ActionBase::getPacketName() const
+{
 	return packetName;
-
 }
 
 
-string to_string(const action_t type){
-
+string to_string(const action_t type)
+{
 	switch(type){
 	
 		case action_t::DESTROY:{
@@ -98,64 +91,58 @@ string to_string(const action_t type){
 		}
 	
 		default:{
-			opp_error("action_t not recognized during conversion to string.");
+			opp_error("[string to_string(const action_t)] Error, type not recognized.");
 		}
-	
-	}
 
+	}
 }
 
 
-action_t to_action_t(const string type){
-
-	/* make more efficient */
-	if(type == "Destroy"){
+action_t to_action_t(const string type)
+{
+	if (type == "Destroy") {
 		return action_t::DESTROY;
 	}
 	
-	if(type == "Move"){
+	if (type == "Move") {
 		return action_t::MOVE;
 	}
 
-	if(type == "Fakeread"){
+	if (type == "Fakeread") {
 		return action_t::FAKEREAD;
 	}
 
-	if(type == "Change"){
+	if (type == "Change") {
 		return action_t::CHANGE;
 	}
 
-	if(type == "Retrieve"){
+	if (type == "Retrieve") {
 		return action_t::RETRIEVE;
 	}
 
-	if(type == "Clone"){
+	if (type == "Clone") {
 		return action_t::CLONE;
 	}
 
-	if(type == "Create"){
+	if (type == "Create") {
 		return action_t::CREATE;
 	}
 
-	if(type == "Drop"){
+	if (type == "Drop") {
 		return action_t::DROP;
 	}
 
-	if(type == "Put"){
+	if (type == "Put") {
 		return action_t::PUT;
 	}
 
-	if(type == "Send"){
+	if (type == "Send") {
 		return action_t::SEND;
 	}
 
-	if(type == "Expression"){
+	if (type == "Expression") {
 		return action_t::EXPRESSION;
 	}
 	
-	opp_error("AttackType not recognized during conversion from string to AttackType.");
-	
+	opp_error("[action_t to_action_t(const string)] Error, type not recognized");
 }
-
-
-

@@ -1,8 +1,6 @@
 /**
  * @file	PhysicalAttack.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 mar 01
  */
 
 
@@ -12,22 +10,21 @@
 #include "Move.h"
 
 
-PhysicalAttack :: PhysicalAttack() : AttackBase(attack_t::PHYSICAL){
-
-	EV_INFO << "PhysicalAttack::PhysicalAttack invoked" << endl;
-
+PhysicalAttack::PhysicalAttack() : AttackBase(attack_t::PHYSICAL)
+{
+	//EV_INFO << "PhysicalAttack::PhysicalAttack invoked" << endl;
 }
 
 
-PhysicalAttack :: ~PhysicalAttack(){
-
+PhysicalAttack::~PhysicalAttack()
+{
 }		
 
 
-void PhysicalAttack :: execute(){
-	
+void PhysicalAttack::execute()
+{	
 	// execute all the actions that compose the attack
-	for(size_t i = 0; i < actions.size(); i++){
+	for (size_t i = 0; i < actions.size(); i++) {
 			
 		switch( actions[i] -> getActionType() ){
 		

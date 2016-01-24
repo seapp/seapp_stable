@@ -11,9 +11,6 @@ package inet.localfilter;
 
 simple LocalFilter{
 
-	
-
-
 	gates: 
 		// TODO
 		// local filter gate name convention
@@ -63,8 +60,6 @@ simple LocalFilter{
 		inout ppp_phy_sup[];
 		inout ppp_phy_inf[];
 
-
-	
 		
 		// gate from/to global filter
 		inout global_filter;

@@ -1,17 +1,15 @@
 /**
  * @file	Expression.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 may 13
  */
 
 
 #include "SEAPPExpression.h"
 
 
-bool SEAPPExpression::isAssignmentOperator (const string op) {
-
-	if( (op == "=") || (op == "+=") || (op == "-=") || (op == "*=") || (op == "/=") || (op == "%=") ){
+bool SEAPPExpression::isAssignmentOperator(const string op)
+{
+	if ( (op == "=") || (op == "+=") || (op == "-=") || (op == "*=") || (op == "/=") || (op == "%=") ) {
 		return true;
 	}
 	
@@ -19,21 +17,20 @@ bool SEAPPExpression::isAssignmentOperator (const string op) {
 }
 
 
-SEAPPExpression::SEAPPExpression (const vector<string> expressionItems) : ActionBase(action_t::EXPRESSION) {
-
+SEAPPExpression::SEAPPExpression(const vector<string> expressionItems) : ActionBase(action_t::EXPRESSION)
+{
 	this->expressionItems = expressionItems;
-	involvedLayer = NONE_LAYER;
-	
+	involvedLayer = NONE_LAYER;	
 }
 
 
-SEAPPExpression::~SEAPPExpression() {
-  
+SEAPPExpression::~SEAPPExpression()
+{  
 }
 
 
-void SEAPPExpression::execute (map<string, Variable*> *variableTable, stack<Variable> *variableStack) {
-	
+void SEAPPExpression::execute(map<string, Variable*> *variableTable, stack<Variable> *variableStack)
+{	
 	Variable leftOperand;
 	Variable rightOperand;
 
@@ -78,7 +75,7 @@ void SEAPPExpression::execute (map<string, Variable*> *variableTable, stack<Vari
 
 			}
 			// is not an assignment operator
-			else{
+			else {
 				
 				// Retrieve the operands
 				rightOperand = variableStack->top();
@@ -114,7 +111,7 @@ void SEAPPExpression::execute (map<string, Variable*> *variableTable, stack<Vari
 					variableStack->push( leftOperand && rightOperand );
 				else if ( op == "||")
 					variableStack->push( leftOperand || rightOperand );
-					
+
 			}
 			
 		}

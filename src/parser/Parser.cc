@@ -1,8 +1,6 @@
 /**
  * @file	Parser.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.7
- * @date	2015 may 13
  */
 
 
@@ -29,23 +27,19 @@
 #include "Variable.h"
 
 
-Parser::Parser (cModule* node) {
-
-	EV << "Parser::Parser invoked" << endl;
-	this->node = node;
-	
+Parser::Parser(cModule* node)
+{
+	this->node = node;	
 }
 
 
-Parser::~Parser () {
-
-	EV << "Parser::~Parser invoked" << endl;
-
+Parser::~Parser()
+{
 }
 
 
-void Parser::parseConfigurationFile (const attack_t attackTypeTarget, vector<AttackEntry*>& attackEntries) {
-
+void Parser::parseConfigurationFile(const attack_t attackTypeTarget, vector<AttackEntry*>& attackEntries)
+{
 	string msg ("Parser::parse invoked to find '" + to_string(attackTypeTarget) + "' attacks");
 	EV_INFO << msg << endl;
 	

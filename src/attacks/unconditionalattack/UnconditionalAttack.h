@@ -1,12 +1,6 @@
 /**
  * @file	UnconditionalAttack.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 15
- *
- * @brief	TODO
- *
- * @details	TODO
  */
  
 
@@ -23,6 +17,8 @@ using namespace std;
 class UnconditionalAttack : public AttackBase {
 
 	private:
+        // TODO change in period
+        // frequency of the unconditional attack
 		double frequency;
 
 	public:

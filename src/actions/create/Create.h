@@ -1,11 +1,7 @@
 /**
- * @file	Create.h
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.99
- * @date	2015 jun 04
- *
- * @brief	Create class makes possible the creation of packets.
- *
+ * @file Create.h
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
+ * @brief Create class makes possible the creation of packets.
  */
 
 
@@ -15,6 +11,7 @@
 
 #include "ActionBase.h"
 #include <vector>
+
 
 using namespace std;
 
@@ -49,7 +46,6 @@ enum class type_t {
 	//IPV6DATAGRAM,			// NET.0100
 	//IPV6DATAGRAM802CTRL,	// NET.0101
 
-	
 	PPPFRAME,				// MAC.0000
 	ETHERNETIIFRAME,		// MAC.0010
 	IDEALAIRFRAME,			// MAC.0020
@@ -59,7 +55,6 @@ enum class type_t {
 
 
 class CreateInfo {
-
 	public:
 		int layer;
 		type_t type;
@@ -71,7 +66,6 @@ class CreateInfo {
 
 
 class Create : public ActionBase {
-
 	private:
 		vector<CreateInfo*> createInfos;
 
@@ -79,7 +73,6 @@ class Create : public ActionBase {
 		void buildNewPacket(cPacket** packet, int layer, type_t type) const;
 		type_t getType(int layer, string typeCode);
 		bool isOuterPacket(int layer) const;
-		
 		
 	public:
 		/**
@@ -98,7 +91,5 @@ class Create : public ActionBase {
 		void execute(cPacket** packet);
 			
 };
-
-
 
 #endif

@@ -1,12 +1,8 @@
 /**
  * @file	Put.h
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.1
- * @date	2015 apr 14
- *
  * @brief	The Put class is used to deliver a packet to a set of nodes.
- *
- * @detail	The Put class is used to deliver a packet to a set of nodes. Three modes are available:
+ * @details	The Put class is used to deliver a packet to a set of nodes. Three modes are available:
  *			 - TX 	the packet is put in the TX buffer of the specified layer
  *			 - RX & STATS 	the packet is put in the RX buffer of the specified layer as it passes through the channel
  *			 - RX & !STATS	the packet is put in the RX buffer of the specified layer as it doesn't pass through the channel

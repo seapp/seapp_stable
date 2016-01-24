@@ -1,13 +1,9 @@
 /**
- * @file	Send.h
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 apr 13
- *
- * @brief	The Send class is used to:
- *			 - send (with a specified delay) a created or cloned packet to the next layer in the tx/rx flow
- *			 - send (with a specified delay) an intercepted packet to the next layer in the tx/rx flow
- * 
+ * @file Send.h
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
+ * @brief The Send class is used to:
+ *			- send (with a specified delay) a created or cloned packet to the next layer in the tx/rx flow
+ *			- send (with a specified delay) an intercepted packet to the next layer in the tx/rx flow
  */
 
 

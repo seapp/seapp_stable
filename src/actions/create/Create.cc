@@ -1,8 +1,6 @@
 /**
- * @file	Create.cc
- * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.99
- * @date	2015 jun 04
+ * @file Create.cc
+ * @author Francesco Racciatti <racciatti.francesco@gmail.com>
  */
 
 
@@ -25,18 +23,18 @@
 #include "AirFrame_m.h"
 
 
-CreateInfo::CreateInfo () { 
-
+CreateInfo::CreateInfo()
+{ 
 }
 
 
-CreateInfo::~CreateInfo () {
-
+CreateInfo::~CreateInfo()
+{
 }
 
 
-void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
-
+void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
+{
 	switch (layer) {
 
 		// create a packet of layer 5
@@ -60,7 +58,6 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 					*packet = (cPacket*) (new TrafficLightCmd());
 					break;
 				}
-
 				
 				// in general, INET has not well structured packets of layer 5
 				default: {
@@ -68,9 +65,7 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 					break;
 				}
 			}		
-			
-
-			
+						
 			(*packet)->addPar("isFiltered");
 			(*packet)->par("isFiltered").setBoolValue(true);
 			
@@ -190,9 +185,7 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 					break;
 				}
 				
-				
-				// XXX add here the code to set other control infos for layer 5
-			
+				// TODO add here the code to set other control infos for layer 5
 			}	
 		
 			break;
@@ -245,12 +238,6 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 			
 			}
 			
-			
-			
-			
-			
-			
-			
 			return;
 		}
 
@@ -260,8 +247,6 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 			// TODO extend with others protocols
 			*packet = new IPv4Datagram("Created packet-IPv4Datagram", 0);
 			
-		
-		
 			// add & set parameters
 			(*packet)->addPar("isFiltered");
 			(*packet)->par("isFiltered").setBoolValue(true);
@@ -290,7 +275,6 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 					(*packet)->setControlInfo(controlInfo);					
 					return;
 				}
-			
 			
 			}
 		
@@ -347,7 +331,8 @@ void Create::buildNewPacket (cPacket** packet, int layer, type_t type) const {
 }
 
 
-type_t Create::getType (int layer, string typeCode) {
+type_t Create::getType (int layer, string typeCode)
+{
 
 	switch (layer) {
 	
@@ -372,7 +357,6 @@ type_t Create::getType (int layer, string typeCode) {
 				return type_t::UDP_ERROR_INDICATION;
 			}
 
-			
 			if (typeCode == "0100") {
 				return type_t::TCP_SEND_COMMAND;
 			}
@@ -452,13 +436,10 @@ type_t Create::getType (int layer, string typeCode) {
 				return type_t::AIRFRAME;
 			}
 		
-		
 		}
 		
-		
-		
 		default: {
-			string errorMsg = "Create::getType can't recognize the control code " + typeCode;
+			string errorMsg = "[type_t Create::getType (int, string)] Error, can't recognize the control code " + typeCode;
 			errorMsg.append(" on layer" + to_string(layer));
 			opp_error(errorMsg.c_str());
 		}
@@ -468,8 +449,8 @@ type_t Create::getType (int layer, string typeCode) {
 }
 
 
-Create::Create(const string layer5Type, const string layer4Type, const string layer3Type, const string layer2Type) : ActionBase(action_t::CREATE) {
-
+Create::Create(const string layer5Type, const string layer4Type, const string layer3Type, const string layer2Type) : ActionBase(action_t::CREATE)
+{
 	if (layer5Type != "-1") {
 		CreateInfo* createInfo = new CreateInfo();
 		createInfo->layer = 5;
@@ -499,21 +480,19 @@ Create::Create(const string layer5Type, const string layer4Type, const string la
 	}
 	
 	involvedLayer = NONE_LAYER;
-
 }
 
 
-Create::~Create () {
-	
+Create::~Create()
+{	
 	for (size_t i = 0; i < createInfos.size(); i++) {
 		delete createInfos[i];
 	}
-  
 }
 
 
-void Create::execute (cPacket **packet) {
-
+void Create::execute(cPacket **packet)
+{
 	cPacket* encapsulatedPacket = nullptr;
 
 	int layer;
@@ -531,16 +510,14 @@ void Create::execute (cPacket **packet) {
 		}
 		
 		*packet = encapsulatedPacket;
-	
 	}
 	
 	setParameterRecursively(*packet, "isFiltered", true);
-
 }
 
 
-bool Create::isOuterPacket (int layer) const {
-
+bool Create::isOuterPacket(int layer) const
+{
 	for (size_t i = 0; i < createInfos.size(); i++) {
 		if (layer > (createInfos[i]->layer))
 			return false;
@@ -548,7 +525,3 @@ bool Create::isOuterPacket (int layer) const {
 
 	return true;
 }
-
-
-
-

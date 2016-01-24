@@ -1,37 +1,34 @@
 /**
  * @file	Send.cc
  * @author	Francesco Racciatti <racciatti.francesco@gmail.com>
- * @version	0.0.2
- * @date	2015 apr 13
  */
 
 
 #include "Send.h"
 #include "seapputils.h"
 
-Send::Send(const double delay) : ActionBase(action_t::SEND) {
 
+Send::Send(const double delay) : ActionBase(action_t::SEND)
+{
 	this->delay = delay;
-	involvedLayer = NONE_LAYER;
-	
+	involvedLayer = NONE_LAYER;	
 }
 
 
-Send::~Send() {
-
+Send::~Send()
+{
 }
 
 
-double Send::getSendDelay() const {
-
+double Send::getSendDelay() const
+{
 	return delay;
-
 }
 
 
-void Send::execute (cMessage* packetToSend) const {
-
-	// TODO remove this check because it is useless, packetToSend has always isSended par 
+// TODO remove the check on the parameter 'isToSend'
+void Send::execute(cMessage* packetToSend) const
+{
 	bool hasParameter = false;
 	hasParameter = packetToSend->hasPar("isToSend");
 
@@ -43,5 +40,4 @@ void Send::execute (cMessage* packetToSend) const {
 	else {
 		packetToSend->par("isToSend").setBoolValue(true);
 	}
-
 }
