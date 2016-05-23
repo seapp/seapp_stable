@@ -48,6 +48,19 @@ def check_layer_name(field):
     if layer_name in layer_names:
         return True
     return False
+    
+
+def check_control_structure_name(field):
+    """
+    Check if the user has specified an existing control structure name
+    """
+    
+    hygienize = field.replace("\"", "")
+    control_structure_name = (hygienize.split("."))[0]
+    
+    if control_structure_name in control_structures_names:
+        return True
+    return False
 
 
 def print_error(error_msg, error_lineno):

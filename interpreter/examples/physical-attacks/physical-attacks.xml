@@ -32,16 +32,6 @@
 			</action>
 		</Attack>
 
-		<Attack>
-			<start_time>50</start_time>
-			<node>1</node>
-
-			<action>
-				<name>Fakeread</name>
-				<parameters>sensor_id:0:function:cos(5*pi*t) + s/2</parameters>
-			</action>
-		</Attack>
-
 	</Physical>
 
 </configuration>

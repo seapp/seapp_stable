@@ -15,12 +15,12 @@ from lexer.adllexer import *
 from engine.utilities import print_error
 from engine.utilities import packet_check
 from engine.utilities import check_layer_name
+from engine.utilities import check_control_structure_name
 
 # Import classes to model primitives
 from primitives.destroy import Destroy
 from primitives.disable import Disable
 from primitives.move import Move
-from primitives.fakeread import Fakeread
 from primitives.drop import Drop
 from primitives.send import Send
 from primitives.clone import Clone
@@ -72,29 +72,6 @@ def p_statement_move(p):
     
     else:
         move_actions[p[5]][move_args] = move_actions[p[5]][move_args] + ":" + str(p[3])
-
-
-# fakeread(int node_id, double occurrence_time, int sensor_id, string function)
-def p_statement_fakeread(p):
-    "physical_statement : FAKEREAD LPAREN node_id COMMA time COMMA sensor_id COMMA identifier RPAREN"
-    
-    # Check if the function has been already declared
-    if p[9] not in functions.keys():
-        print_error("Error: function '" + p[9] + "' is not declared", str(p.lineno(1)) )
-    
-    # Replace the identifier with its content
-    p[9] = str(functions[str(p[9])])
-        
-    fakeread_args = "" + str(p[7]) + ":" + str(p[9])
-     
-    if not p[5] in fakeread_actions.keys():
-        fakeread_actions[p[5]] = {}
-    
-    if not fakeread_args in fakeread_actions[p[5]].keys():
-        fakeread_actions[p[5]][fakeread_args] = "" + str(p[3])
-    
-    else:
-        fakeread_actions[p[5]][fakeread_args] = fakeread_actions[p[5]][fakeread_args] + ":" + str(p[3])
 
 
 # drop (packet p, signed_double threshold)
@@ -183,9 +160,10 @@ def p_statement_change(p):
         if value == "<":
             print_error("Error: variable '" + p[7] + "' must be initialized", str(p.lineno(1)) )
     
-    # Check layer name
+    # Check layer name and control structure name
     if check_layer_name(p[5]) == False:
-        print_error("Error: layer name unknown, you can use only: APP or NET or MAC", str(p.lineno(1)))
+        if check_control_structure_name(p[5]) == False:
+            print_error("Error: layer name or control structure name unknown, you can use only: APP or TRA or NET or MAC or controlInfo or sending", str(p.lineno(1)))
     
     # Check coerency of layer_field structure "layer.field1.field2.field3 ..."
     layer_field = str(p[5])
@@ -245,7 +223,7 @@ def p_statement_retrieve(p):
     
     # Check if the layer name is valid
     if check_layer_name(p[5]) == False:
-        print_error("Error: layer name unknown, you can use only: APP or NET or MAC", str(p.lineno(1)))
+        print_error("Error: layer name unknown, you can use only: APP or TRA or NET or MAC", str(p.lineno(1)))
     
     # Check coerency of layer_field structure "layer.field1.field2.field3 ..."
     layer_field = str(p[5])

@@ -35,7 +35,6 @@ def p_physical_funcall_error(p):
     physical_statement : DESTROY LPAREN error RPAREN
                        | MOVE LPAREN error RPAREN
                        | DISABLE LPAREN error RPAREN
-                       | FAKEREAD LPAREN error RPAREN
     """
     
     print "Error: syntax wrong in " + p[1] + "() argument declaration - Line " + str(p.lineno(3))

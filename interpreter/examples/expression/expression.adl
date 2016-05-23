@@ -19,7 +19,7 @@ from 100 every 0.1 do {
     var step = 1
     
 	# create a new packet
-	create(fakePacket, "APP.type", 0)
+	create(fakePacket, "APP.type", "0000")
 
 	# fill the new packet properly
 	change(fakePacket, "APP.sequenceNumber", sequenceNumber)

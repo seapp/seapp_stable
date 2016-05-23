@@ -114,13 +114,6 @@ def p_identifier(p):
         p[0] = str(p[1])
 
 
-# Sensor id (actually used only by fakeread)
-def p_sensor_id(p):
-    "sensor_id : INTEGER"
-    
-    p[0] = str(p[1])
-
-
 # Direction (actually used only by put)
 def p_direction(p):
     """
@@ -156,6 +149,6 @@ def p_create_pair(p):
     "create_list : STRING COMMA multi_type"
     
     if check_layer_name(p[1]) == False:
-        print_error("Error: layer name unknown, you can use only: APP or NET or MAC", str(p.lineno(1)))
+        print_error("Error: layer name unknown, you can use only: APP or TRA or NET or MAC", str(p.lineno(1)))
     
     p[0] = str(p[1]) + ":" + str(p[3])

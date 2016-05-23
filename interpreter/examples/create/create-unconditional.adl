@@ -18,12 +18,23 @@ from 100 every 0.1 do {
 		packet fakePacket
 		
 		# create a new packet
-		create(fakePacket, "APP.type", 0)
+		create(fakePacket, "APP.type", "0301")
 
 		# fill the new packet properly
-		change(fakePacket, "APP.data", 1000)
-		change(fakePacket, "APP.source", 1234)
+		change(fakePacket, "APP.periodGreen", 9)
+        change(fakePacket, "APP.periodYellow", 0.5)
+        change(fakePacket, "APP.periodRed", 0.5)
 		
+        # handle control info
+        change(fakePacket, "controlInfo.sockId", 4)
+        change(fakePacket, "controlInfo.interfaceId", 101)
+        change(fakePacket, "controlInfo.destPort", 2000)
+        change(fakePacket, "controlInfo.destAddr", "10.0.0.9")
+        change(fakePacket, "controlInfo.outputGate", "app_udp_sup$o[1]")
+	
+        # handle field sending
+        change(fakePacket, "sending.arrivalGate", "192.0.0.1")
+        
 		# put the new packet in the RX buffer of nodes in the dstList
 		put(fakePacket, dstList, RX, FALSE, 0)
 

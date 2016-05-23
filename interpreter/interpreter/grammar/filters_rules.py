@@ -116,7 +116,7 @@ def p_full_path(p):
         # Check if the layer is valid
         if id_counter == 1:
             if substring_found not in layer_names: 
-                print_error("Error: layer name unknown, you can use only APP or NET or MAC", str(p.lineno(1)))
+                print_error("Error: layer name unknown, you can use only APP or TRA or NET or MAC", str(p.lineno(1)))
         
         # Remove substring found
         full_path = full_path.replace(substring_found, "", 1)

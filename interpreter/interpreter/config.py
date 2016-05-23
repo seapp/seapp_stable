@@ -12,7 +12,10 @@ Authors:
 reserved_name = ["RANDOM"]
 
 # List of the layer names
-layer_names = ["APP", "NET", "MAC"]
+layer_names = ["APP", "TRA", "NET", "MAC"]
+
+# List of others control structures
+control_structures_names = ["controlInfo", "sending"]
 
 
 # Dictionary of the global IDs and their types (i.e. VAR, PACKET, LIST)
@@ -53,9 +56,6 @@ disable_actions = {}
 
 # Dictionary of 'move' actions; entry format is <time, <position, list_nodes> >
 move_actions = {} 
-
-# Dictionary of 'fakeread' actions; entry format is <time, <sensor_id, list_nodes> >
-fakeread_actions = {} 
 
 
 # Packet filter boolean expression

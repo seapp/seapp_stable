@@ -15,9 +15,3 @@ disable(2, 50)
 
 # move the node 1 at time 50 to <10,10,10>
 move(1, 50, 10, 10, 10)
-
-# declare a function
-function f1 = "cos(5*pi*t) + s/2"
-
-# tamper the sensor 0 of node 1 from time 50 by using the output of f1
-fakeread(1, 50, 0, f1)

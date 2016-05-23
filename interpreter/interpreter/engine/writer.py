@@ -12,7 +12,6 @@ Authors:
 from primitives.destroy import Destroy
 from primitives.disable import Disable
 from primitives.move import Move
-from primitives.fakeread import Fakeread
 
 # Import classes to model attacks
 from attacks.physical import PhysicalAttack
@@ -36,7 +35,7 @@ def write_output_file(out_name):
     out_file.write("\n<configuration>\n")
     
     # Write physical attacks
-    if (len(destroy_actions) or len(disable_actions) or len(move_actions) or len(fakeread_actions)):
+    if (len(destroy_actions) or len(disable_actions) or len(move_actions)):
         
         # Begin physical attack section
         out_file.write("\n\t<Physical>\n")
@@ -79,20 +78,6 @@ def write_output_file(out_name):
                     del actions[:]
             
             move_actions.clear()
-        
-        # Build compact 'fakeread' blocks
-        if len(fakeread_actions):
-             # key1 is the occurrence time
-            for key1 in fakeread_actions:
-                # key2 includes the parameters 'sensorID:alpha:beta'
-                for key2 in fakeread_actions[key1]: 
-                    action = Fakeread(key2)
-                    actions.append(action) 
-                    attack = PhysicalAttack(key1, fakeread_actions[key1][key2], actions)
-                    physical_attacks.append(attack)
-                    del actions[:]
-            
-            fakeread_actions.clear()
         
         # Write an XML block for each physical attack
         for attack in physical_attacks:

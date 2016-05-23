@@ -24,7 +24,7 @@ from 100 nodes in targetList do {
 		drop(original, 1)
 
 		# create a new packet
-		create(fakePacket, "APP.type", 0)
+		create(fakePacket, "APP.type", "0000")
 
 		# fill the new packet properly
 		change(fakePacket, "APP.data", 1000)
