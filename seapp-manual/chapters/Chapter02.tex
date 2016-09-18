@@ -1,0 +1,388 @@
+% !TEX root = ../seapp-manual.tex
+
+% Chapter 2 - Summary of ASL primitives
+
+\chapter{Summary of ASL primitives}
+\label{ch:asl-primitives}
+
+\section{Actions}
+The set of the available actions is shown below.
+
+\paragraph{destroy}
+The \emph{destroy} action is a node action used to destroy a node.
+%
+\begin{lstlisting}[language={asl}, caption={ASL destroy example}]
+#primitive: destroy(nodeId, t)
+destroy(5, 200)
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml}, caption={Interpreter output}]
+<configuration>
+  <Physical>
+    <Attack>
+      <start_time>200</start_time>
+      <node>5<node>
+      <action>
+        <name>Destroy</name>
+      </action>
+    </Attack>
+  </Physical>
+</configuration>
+\end{lstlisting}
+
+\paragraph{move}
+The \emph{move} action is a node action used to move a node.
+%
+\begin{lstlisting}[language={asl},caption={ASL move example}]
+#primitive: move(nodeId, t, x, y, z)
+move(5, 100, 10, 10, 0)
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Physical>
+    <Attack>
+      <start_time>100</start_time>
+      <node>5<node>
+      <action>
+        <name>Move</name>
+        <parameters>10:10:0</parameters>
+      </action>
+    </Attack>
+  </Physical>
+</configuration>
+\end{lstlisting}
+
+\paragraph{retrieve}
+The \emph{retrieve} action is a packet action used to retrieve the content of a field of a target packet and to store it into a variable.
+%
+\begin{lstlisting}[language={asl},caption={ASL retrieve example}]
+#primitive: retrieve(packetName, fieldName, variableName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+ filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    var destPort
+    retrieve(original, "UDP.sourcePort", destPort)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <var>
+        <name>destPort</name>
+        <value></value>
+        <type>NONE</type>
+      </var>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Retrieve</name>
+        <parameters>packetName:original:field_name:UDP.sourcePort:varName:destPort</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+%
+In the ASF the conditional operators are stored in \emph{reverse order} to that of the operands.
+
+\paragraph{drop}
+The \emph{drop} action is a packet action used to discard a target packet.
+%
+\begin{lstlisting}[language={asl},caption={ASL drop example}]
+#primitive: drop(packetName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    drop(original)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Drop</name>
+        <parameters>packetName:original</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+\paragraph{clone}
+The \emph{clone} action is a packet action used to create a packet that is a clone of a target packet.
+%
+\begin{lstlisting}[language={asl},caption={ASL clone example}]
+#primitive: clone(packetName, clonedPacketName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet dolly
+    clone(original, dolly)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Clone</name>          
+        <parameters>packetName:original:newPacketName:dolly</parameters>                        
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+%
+The interpreter handles the variables and the packets in two different ways. 
+In the ASL file, the user has to declare both the variables and the packets but in the ASF the declared packets do not appear, unlike the declared variables.
+
+\paragraph{create}
+The \emph{create} action is a packet action used to create a packet ex-novo.
+%
+\begin{lstlisting}[language={asl},caption={ASL create example}]
+#primitive: create(packetName, layer5.type, value5, layer4.type, value4, layer3.type, value3, layer2.type, value2)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet exNovo
+    create(exNovo, "APP.type", "0000")
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Create</name>
+        <parameters>packetName:exNovo:APP.type:0000</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+\paragraph{change}
+The \emph{change} action is a packet action used to change the content of a field of a target packet.
+%
+\begin{lstlisting}[language={asl},caption={ASL change example}]
+#primitive: change(packetName, fieldName, variableName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    change(original, "UDP.destinationPort", 5000)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <var>
+        <name>5000</name>
+        <value>5000</value>
+        <type>NUMBER</type>
+      </var>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Change</name>
+        <parameters>packetName:original:field_name:UDP.destinationPort:value:5000</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+%
+In the ASL file, even if the user uses variables which has not been explicitly declared, the interpreter automatically declares and initializes the variables (if it is necessary).
+
+\paragraph{send}
+Given a packet, cloned or created (and correctly fillled), which belongs to the layer $L$, the \emph{send} action is used to send the packet to the bottom layer.
+%
+\begin{lstlisting}[language={asl},caption={ASL send example}]
+#primitive: send(packetName, forwardingDelay)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet dolly
+    clone(original, dolly)
+    send(dolly, 0)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Clone</name>          
+        <parameters>packetName:original:newPacketName:dolly</parameters>                        
+      </action>
+      <action>
+        <name>Send</name>
+        <parameters>packetName:dolly:delay:0</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+\paragraph{put}
+The \emph{put} action is usefull to transmit packets from a node to a set of recipient nodes bypassing the communication channel.
+%
+\begin{lstlisting}[language={asl},caption={ASL put example}]
+#primitive: put(packetName, recipientNodes, direction, updateStats, forwardingDelay)
+list targetList = {1,2,5}
+list dstList = {6}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet dolly
+    clone(original, dolly)
+    put(dolly, dstList, TX, FALSE, 0)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Clone</name>          
+        <parameters>packetName:original:newPacketName:dolly</parameters>                        
+      </action>
+      <action>
+        <name>Put</name>
+        <parameters>packetName:dolly:nodes:6:direction:TX:throughWC:false:delay:0</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+
+
+\section{Variables and expressions}
+
+\subsection{Variables}
+The ASL handles variables which can store both numbers and strings. The user must declare the variable before using it. The sintax to declare a variable is:
+%
+\begin{lstlisting}[language={asl}, caption={Sintax to declare a variable}]
+var foo
+\end{lstlisting}
+%
+The AS introduces the type transparency than the user has not to declare the type of the content of the variable, e.g. integer, or double, or string. 
+
+\paragraph{Expressions}
+The ASL handles expressions that make possible both operations and assignments. In the table~\ref{tab:expression-table-appendix} is shown the ASL expression table.
+%
+\begin{table}
+\centering
+\subfloat[Assignment operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$=$			& supported		& supported		\\
+$+=$			& supported		& not supported	\\
+$-=$			& supported		& not supported	\\
+$\times =$		& supported		& not supported	\\
+$/=$			& supported		& not supported	\\
+$\div =$		& supported		& not supported	\\
+\bottomrule
+\end{tabular}
+}\\
+\subfloat[Arithmetic operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$+$		& supported		& supported		\\
+$-$		& supported		& not supported	\\
+$\times$	& supported		& not supported	\\
+$/$		& supported		& not supported	\\
+$\div$	& supported		& not supported	\\
+\bottomrule
+\end{tabular}
+}\\
+\subfloat[Comparison operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$<$		& supported		& supported	\\
+$>$		& supported		& supported	\\
+$<=$		& supported		& supported	\\
+$>=$		& supported		& supported	\\
+$==$		& supported		& supported	\\
+$!=$		& supported		& supported	\\
+\bottomrule
+\end{tabular}
+}\\
+\subfloat[Logical operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$AND$	& supported		& supported	\\
+$OR$	& supported		& supported	\\
+\bottomrule
+\end{tabular}
+}
+\caption{ASL expression table}
+\label{tab:expression-table-appendix}
+\end{table}
+
+An example of ASL expression is:
+%
+\begin{lstlisting}[language={asl}, caption={Sintax expression example}]
+var result
+var operand1 =  2
+var operand2 =  7
+result = operand1 +  operand2
+\end{lstlisting}
+%
+As specified above, the ASL introduces the type transparency and a variable can store both numbers and strings. This feature makes possible to initialize a variable with a number and after assign a string to it:
+%
+\begin{lstlisting}[language={asl}, caption={Legal expressions}]
+var result
+var operand1 =  2
+var operand2 =  7
+result = operand1 +  operand2
+result = "Hello, world!"		# legal expression
+\end{lstlisting}
+%
+However the user has got the responsibility to ensure the consinstency of the expressions:
+%
+\begin{lstlisting}[language={asl}, caption={Illegal expressions}]
+var result
+var operand1 =  2
+var operand2 =  7
+result = operand1 +  operand2
+result = "Hello"			# legal expression
+result += ", world!"			# legal expression
+var operand3 =  5
+resutl += operand3			# illegal expression
+\end{lstlisting}
