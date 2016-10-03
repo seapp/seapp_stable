@@ -9,7 +9,7 @@
 The set of the available actions is shown below.
 
 \paragraph{destroy}
-The \emph{destroy} action is a node action used to destroy a node.
+The \emph{destroy} action is a node action used to destroy a node. The node discards all the packets and it is present in the simulation field.
 %
 \begin{lstlisting}[language={asl}, caption={ASL destroy example}]
 #primitive: destroy(nodeId, t)
@@ -24,6 +24,28 @@ destroy(5, 200)
       <node>5<node>
       <action>
         <name>Destroy</name>
+      </action>
+    </Attack>
+  </Physical>
+</configuration>
+\end{lstlisting}
+
+\paragraph{disable}
+The \emph{disable} action removes the target node from the simulation field.
+%
+\begin{lstlisting}[language={asl}, caption={ASL disable example}]
+#primitive: disable(nodeId, t)
+destroy(5, 200)
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml}, caption={Interpreter output}]
+<configuration>
+  <Physical>
+    <Attack>
+      <start_time>200</start_time>
+      <node>5<node>
+      <action>
+        <name>Disable</name>
       </action>
     </Attack>
   </Physical>

@@ -23,7 +23,7 @@ When the user creates a new packet, it has to specify the output gate in the loc
 \begin{lstlisting}[language={asl}, caption={Handle output gate example}]
 create(newPacket, ...)
 ...
-change(newPacket, sending.outputGate, "app_udp_sup$o[0]")
+change(newPacket, "sending.outputGate", "app_udp_sup$o[0]")
 \end{lstlisting}
 
 

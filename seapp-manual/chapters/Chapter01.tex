@@ -16,7 +16,7 @@ In particular SEA++:
 \end{itemize}
 
 SEA++ is designed for Linux distributions based on Debian and it was not tested on other OSs.
-It is fully compatible with Ubuntu 14.04 LTS, but it is possible using it on older versions by adopting several shrewdnesses.
+It is fully compatible with Ubuntu 14.04 LTS, but it is possible using it on older or newer versions by adopting several shrewdnesses.
 
 
 \section{Build SEA++ on Ubuntu 14.04 LTS}
@@ -120,6 +120,7 @@ The \texttt{seapp-0.99} directory on your home should contain the following subd
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{clone/}}} clone class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{create/}}} create class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{destroy/}}} destroy class}
+			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{disable/}}} disable class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{drop/}}} drop class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{move/}}} move class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{put/}}} put class}
@@ -132,6 +133,7 @@ The \texttt{seapp-0.99} directory on your home should contain the following subd
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{physicalattack/}}} physical attack class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{conditionalattack/}}} conditional attack class}
 			\item[] {\makebox[6cm][l]{\quad\quad\quad\texttt{\textbf{unconditionalattack/}}} unconditional attack class}
+		\item[] {\makebox[6cm][l]{\quad\quad\texttt{\textbf{exmachina/}}} exmachina class}
 		\item[] {\makebox[6cm][l]{\quad\quad\texttt{\textbf{globalfilter/}}} globalfilter class}
 		\item[] {\makebox[6cm][l]{\quad\quad\texttt{\textbf{localfilter/}}} localfilter class}
 		\item[] {\makebox[6cm][l]{\quad\quad\texttt{\textbf{parser/}}} parser class}
@@ -163,11 +165,10 @@ SEA++ uses features provided by C++11. It is necessary to install at least the v
 \subsection{Link libraries in SEA++ makefile}
 SEA++ is built and checked for Debian Linux Distributions and not for other OSs. It is necessary to check if libraries used by SEA++ are linked to the correct paths. After downloading SEA++, in the initial makefile, all the links to the libraries are under \texttt{-l/usr/lib/x86\_64-linux-gnu/*} path.
 
-You may need to change the path to \texttt{-l/usr/lib/i386-linux-gnu/*}.
+You may need to change the path to \texttt{-l/usr/lib/i386-linux-gnu/*} depending on system's architecture.
 
 
 \subsection{Change CFLAGS in OMNeT++ configure file}
 SEA++ is based on INET and the \texttt{opp\_makemake} tool of OMNeT++ is used in order to compile the framework. The file \texttt{configure.user} is the one where all the necessary parameters (compilers, flags, etc) are declared. To enable the features provided by C++11 you have to declare the option \texttt{'-std=c++11'} in the flag CFLAGS of OMNeT++'s \texttt{configure.user} file.
-
 
 
