@@ -21,6 +21,12 @@
 #include "IdealAirFrame_m.h"
 #include "AirFrame_m.h"
 
+//#include "InterfaceEntry.h"
+#include "IInterfaceTable.h"
+#include "InterfaceTableAccess.h"
+#include "IPv4InterfaceData.h"
+//#include "IRoutingTable.h"
+
 // TODO change value in valueName
 
 Change::Change(const string fieldName, const string value) : ActionBase(action_t::CHANGE)
@@ -28,7 +34,7 @@ Change::Change(const string fieldName, const string value) : ActionBase(action_t
 	vector<string> tokens;
 	tokenize(tokens, fieldName, '.');
 
-	if ((tokens[0] == "controlInfo") || (tokens[0]=="sending")) {
+	if ((tokens[0] == "controlInfo") || (tokens[0]=="sending") || tokens[0]=="attackInfo") {
 		this->externalInfo.assign(tokens[0]);
 		involvedLayer = NONE_LAYER;
 	}
@@ -490,8 +496,10 @@ void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
 		
 		// handle IPv4ControlInfo
 		if (className.find("IPv4") != std::string::npos) {
-		
 			if (className == "IPv4ControlInfo") {
+
+				//AS
+				IPv4ControlInfo* ipv4ControlInfo = (check_and_cast<IPv4ControlInfo*>(controlInfo));
 
 				if (fieldName == "destAddr") {
 					IPv4Address destAddr(value.c_str());
@@ -500,7 +508,77 @@ void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
 				}
 				
 				if (fieldName == "srcAddr") {
+
 					IPv4Address srcAddr(value.c_str());
+
+					//==============================================
+					int intfId = ipv4ControlInfo->getInterfaceId();	
+
+					IInterfaceTable *ift = InterfaceTableAccess().get();
+					cModule *ethModule;  
+
+					if (ift!=NULL) {
+
+						//na vrw to mac module
+
+						/* cModule *ifTable = ift->getHostModule();
+						for (cModule::SubmoduleIterator it(ifTable); !it.end(); it++) {
+							std::string subName(it()->getFullName()); //eth[0]
+							//print the submodules
+							std::cout<<"submodule = " << subName << endl;
+
+    						if(subName.find("eth")!=std::string::npos) {
+    							ethModule = it();
+    							if(ethModule->hasSubmodules()) {
+    								for (cModule::SubmoduleIterator it2(ethModule); !it2.end(); it2++) {
+    									std::cout<<"eth[0] submodule = " << it2()->getFullName() << endl;
+    									std::string macName(it2()->getFullName());
+    									if(macName.find("mac")!=std::string::npos) {
+    										cModule* macModule = it2();
+    										if(macModule-> hasSubmodules()) {
+    											std::cout<<"kati exei k auto!\n";
+    										}
+    									}
+    								}
+    							}
+    						}
+    					} 
+						
+						// current registered interfaces
+						for (int i=0; i<ift->getNumInterfaces(); i++) {
+							if (ift->getInterface(i)->ipv4Data()!=NULL)
+                			{
+                        		std::cout << "interface: "<<ift->getInterface(i)->getInterfaceModule() <<endl;
+                        		std::cout << "interface id: " << ift->getInterface(i)->getInterfaceId() << endl;
+                        		//->ipv4Data()->getIPAddress()<< endl; 
+							}
+						}*/
+
+						InterfaceEntry* ie = ift->getInterfaceById(ipv4ControlInfo->getInterfaceId());
+						
+						//new unregistered interface
+						if (ie == NULL) {
+							/*std::cout<<"ksekinamena gelame....\n";
+							ie = new InterfaceEntry(macModule); //to be improved
+							IPv4InterfaceData *p = new IPv4InterfaceData();
+							p->setIPAddress(srcAddr);
+							ie->setIPv4Data(p);
+							ift->addInterface(ie);
+							ie->setInterfaceId(intfId);*/
+							std::cout<<"nai kala....!!!!!\n";
+						}
+						else { //existing interface
+							InterfaceEntry* ieCopy = new InterfaceEntry(ie->getInterfaceModule());
+							ieCopy->setInterfaceId(ie->getInterfaceId());
+							IPv4InterfaceData *p = new IPv4InterfaceData();
+							p->setIPAddress(srcAddr); //change the ip addr
+							ieCopy->setIPv4Data(p);
+							ift->addInterface(ieCopy);
+						}
+
+					}  
+
+					//===============================================
 					(check_and_cast<IPv4ControlInfo*> (controlInfo))->setSrcAddr(srcAddr);
 					return;
 				}
@@ -648,7 +726,7 @@ void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
 				
 			}
 			
-			if (className == "IPv4RoutingDecision") {
+			/*if (className == "IPv4RoutingDecision") {
 				// not supported yet
 				string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, IPv4RoutingDecision ControlInfo is not supported";
 				opp_error(errorMsg.c_str());
@@ -658,7 +736,8 @@ void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
 			errorMsg.assign("[void Change::executeOnExternalInfo(cMessage**, string)] Error, IPv4 field ");
 			errorMsg.append(fieldName);
 			errorMsg.append(" not found");
-			opp_error(errorMsg.c_str());			
+			opp_error(errorMsg.c_str());	
+			*/		
 		}
 		
 		// TODO insert here control info of other protocols
@@ -668,7 +747,7 @@ void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
 	
 	// change sending fields	
 	if (externalInfo == "sending") {
-		if (fieldName=="outputGate") {
+		if (fieldName == "outputGate") {
 			bool hasParameter = (*packetToChange)->hasPar("outputGate");
 			if (hasParameter == false) {
 				(*packetToChange)->addPar("outputGate");
@@ -677,6 +756,21 @@ void Change::executeOnExternalInfo(cMessage** packetToChange, string value)
 			return;
 		}
 		string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, can't find the specified field in sending";
+		opp_error(errorMsg.c_str());
+	}
+
+	// A.S
+	// change attackInfo fields
+	if(externalInfo == "attackInfo") {
+		if (fieldName == "fromGlobalFilter") {
+			bool hasParameter = (*packetToChange)->hasPar("fromGlobalFilter");
+			if (hasParameter == false) {
+				(*packetToChange)->addPar("fromGlobalFilter");
+			}
+			(*packetToChange)->par("fromGlobalFilter").setStringValue(value.c_str());		
+			return;
+		}
+		string errorMsg = "[void Change::executeOnExternalInfo(cMessage**, string)] Error, can't find the specified field in attackInfo";
 		opp_error(errorMsg.c_str());
 	}
 	

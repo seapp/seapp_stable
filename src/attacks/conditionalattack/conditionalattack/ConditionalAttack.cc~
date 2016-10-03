@@ -63,7 +63,10 @@ bool ConditionalAttack::matchPacketFilter(cMessage* packet) const
 	
 	// check if its layer independent ==> if the parameter exists
     // ..alex
-
+	
+	if(minimumInvolvedLayer == 0) {
+	  return true;
+	}
 	
 	if (packetLayer > minimumInvolvedLayer) {
         return false;

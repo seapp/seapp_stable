@@ -14,6 +14,7 @@
 #include "UnconditionalAttack.h"
 
 #include "Destroy.h"
+#include "Disable.h"
 #include "Move.h"
 #include "Drop.h"
 #include "Clone.h"
@@ -354,6 +355,18 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 							
 						msg.clear();
 						msg.append("Parser::initializeAttack has added a destroy action to the vector PhysicalAttack::action");
+						EV_INFO << msg << endl;
+						
+						break;
+					}
+
+					// Disable
+					case action_t::DISABLE: {	
+						Disable* disable = new Disable(node);
+						attack->addAction(disable);
+							
+						msg.clear();
+						msg.append("Parser::initializeAttack has added a disable action to the vector PhysicalAttack::action");
 						EV_INFO << msg << endl;
 						
 						break;

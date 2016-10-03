@@ -64,6 +64,15 @@ int getPacketLayer(cPacket* packet)
 	if (packetClassName == "TrafficLightCmd") {
 		return 5;
 	}
+	
+	// A.S
+	if (packetClassName == "ApplicationPacket") {
+		return 5;
+	}
+	// A.S
+	if (packetClassName == "SendApplicationPacket") {
+		return 5;
+	}
 
 	if (packetClassName == "UDPPacket") {
 		return 4;
@@ -76,8 +85,13 @@ int getPacketLayer(cPacket* packet)
 	if (packetClassName == "IPv4Datagram") {
 		return 3;
 	}
-	
+	if (packetClassName == "ARPPacket") {
+		return 2;
+	}	
 	if (packetClassName == "PPPFrame") {
+		return 2;
+	}
+	if (packetClassName == "ETHERNETIIFRAME") {
 		return 2;
 	}
 	
@@ -106,16 +120,28 @@ int layertoi(const string layer)
                     return 2;
                 } 
                 else {
-                    string errorMsg = ("[int layertoi(const string)] Error, layer ");
-                    errorMsg.append(layer);
-                    errorMsg.append(" not recognized; it supports only APP, TRA, NET or MAC.");
-                    opp_error(errorMsg.c_str());
+				  if (isControlInfo(layer)) {
+					return 0; // special number representing control info
+				  }
+				  else {
+					string errorMsg = ("[int layertoi(const string)] Error, layer ");
+					errorMsg.append(layer);
+					errorMsg.append(" not recognized; it supports only APP, TRA, NET or MAC or control info.");
+					opp_error(errorMsg.c_str());
+				  }
                 }
             }
         }
     }
 }
 
+
+bool isControlInfo(const string layer) {
+	if ((layer == "attackInfo") || (layer == "controlInfo")) 
+		return true;
+	else 
+		return false;
+}
 
 void setParameterRecursively(cMessage* msg, const string parameterName, const bool parameterValue) 
 {
@@ -139,6 +165,36 @@ void setParameterRecursively(cMessage* msg, const string parameterName, const bo
 	}
 }
 
+bool hasPayload(cMessage* msg) {
+	bool isPacket = msg->isPacket();
+	if (isPacket) { 
+		cPacket *packet = dynamic_cast<cPacket*>(msg);
+		cPacket* encapsulatedPacket = packet->getEncapsulatedMsg();
+		if (encapsulatedPacket != nullptr) 
+			return true;
+		else
+			return false;
+	}
+}
+
+bool getParamFromEncapsulatedPacket(cMessage* msg, const string parameterName) {
+	bool isPacket = msg->isPacket();
+	if (isPacket) { 
+		cPacket *packet = dynamic_cast<cPacket*>(msg);
+		cPacket* encapsulatedPacket = packet->getEncapsulatedMsg();
+		if (encapsulatedPacket != nullptr) {
+			if (encapsulatedPacket->hasPar(parameterName.c_str())) {
+				return encapsulatedPacket->par(parameterName.c_str()).boolValue();
+			}		
+		}
+		else {
+			string errorMsg;
+			errorMsg.append("[bool getParamFromEncapsulatedPacket(cMessage* msg, sting parameterName)] Error, there is no '");
+			errorMsg.append("' encapsulated packet");
+            opp_error(errorMsg.c_str());	
+		}
+	}	
+}
 
 cPacket* hardCopy (cPacket* packetToCopy)
 {

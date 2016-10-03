@@ -41,10 +41,10 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 	// <A.S>
 	// if (blockLayer == 0) then the check is against controlInfo independently of message layer
 	if (blockLayer == 0) {
-		string fieldName = fullPath[1];
-	    if (msg->hasPar(fieldName.c_str())) {
+		
+	    if (msg->hasPar(fullPath[1].c_str())) {
 			//retrieve the value of the parameter
-			actualValue = to_string(msg->par(fieldName.c_str()).boolValue());
+			actualValue = msg->par(fullPath[1].c_str()).boolValue();
 	 	}
 	}
 	

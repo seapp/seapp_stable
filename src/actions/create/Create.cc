@@ -22,6 +22,9 @@
 #include "IdealAirFrame_m.h"
 #include "AirFrame_m.h"
 
+//A.S
+#include "ApplicationPacket_m.h"
+#include "SendApplicationPacket_m.h"
 
 CreateInfo::CreateInfo()
 { 
@@ -58,6 +61,15 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 					*packet = (cPacket*) (new TrafficLightCmd());
 					break;
 				}
+				//A.S
+				case type_t::APPLICATION_PACKET: {
+					*packet = (cPacket*) (new ApplicationPacket());
+					break;
+				}
+				case type_t::SEND_APPLICATION_PACKET: {
+					*packet = (cPacket*) (new SendApplicationPacket());
+					break;
+				}
 				
 				// in general, INET has not well structured packets of layer 5
 				default: {
@@ -74,6 +86,9 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
+
+			(*packet)->addPar("fromGlobalFilter");
+			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 
 			cObject* controlInfo = nullptr;
 			
@@ -185,6 +200,18 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 					break;
 				}
 				
+				//A.S
+				case type_t::APPLICATION_PACKET: {
+					controlInfo = new UDPDataIndication();
+					(*packet)->setControlInfo(controlInfo);
+					break;
+				}
+				case type_t::SEND_APPLICATION_PACKET: {
+					controlInfo = new UDPSendCommand();
+					(*packet)->setControlInfo(controlInfo);					
+					break;
+				}
+				
 				// TODO add here the code to set other control infos for layer 5
 			}	
 		
@@ -212,6 +239,9 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
+
+			(*packet)->addPar("fromGlobalFilter");
+			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 			
 							
 			// append control info only to the outer packet
@@ -256,6 +286,9 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
+
+			(*packet)->addPar("fromGlobalFilter");
+			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 			
 			// append control info only to the outer packet
 			if (!isOuterPacket(layer)) {
@@ -267,6 +300,8 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 				case type_t::IPV4DATAGRAM: {
 					// no control info
+					controlInfo = new IPv4Datagram();
+					(*packet)->setControlInfo(controlInfo);
 					return;
 				}
 				
@@ -314,6 +349,9 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
+
+			(*packet)->addPar("fromGlobalFilter");
+			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 			
 							
 			// append control info only to the outer packet
@@ -384,6 +422,12 @@ type_t Create::getType (int layer, string typeCode)
 			}
 			if (typeCode == "0301") {
 				return type_t::CNCMD_UDP_DATA;
+			}
+			if (typeCode == "1000" ) {
+				return type_t::APPLICATION_PACKET;
+			}
+			if (typeCode == "1001" ) {
+				return type_t::SEND_APPLICATION_PACKET;
 			}
 
 		}
@@ -513,6 +557,9 @@ void Create::execute(cPacket **packet)
 	}
 	
 	setParameterRecursively(*packet, "isFiltered", true);
+	
+	if (strcmp((*packet)->getOwner()->getName(), "globalFilter") == 0)
+		setParameterRecursively(*packet, "fromGlobalFilter", true);
 }
 
 

@@ -20,6 +20,8 @@
 #include "InterfaceEntry.h"
 #include "InterfaceTableAccess.h"
 
+#include "ExMachina.h"
+
 
 Define_Module(LocalFilter);
 
@@ -125,19 +127,56 @@ void LocalFilter::initializeAttacks()
 	
 	cMessage* selfMessage;
 
-	// schedule self messages according to the occurrence time and attach to it the physical attacks
-	if( physicalAttacks.size() > 0 ){
+	// schedule self messages according to the occurrence time and attach to it the physical attacks, 
+	// except disable attack
+	if (physicalAttacks.size() > 0) {
 		for(size_t i=0; i<physicalAttacks.size(); i++){
-			selfMessage = new cMessage("Fire physical attack", (short) attack_t::PHYSICAL);
-			selfMessage->addPar("attack");
-			selfMessage->par("attack").setPointerValue(physicalAttacks[i]->getAttack());
-			scheduleAt(physicalAttacks[i]->getOccurrenceTime(), selfMessage);
+            // get the attack
+            AttackBase* attack = physicalAttacks[i]->getAttack();
+            
+            // recognize the physical action 'disable' (physical attacks are made by a single physical action)
+            ActionBase* action = attack->getAction(0);
+            if (action->getActionType() == action_t::DISABLE) {
+                
+                // find the module 'ExMachina' in the network
+                cModule* network = static_cast<cModule*>((getParentModule())->getParentModule());
+                cModule* subModule = nullptr;
+                bool exMachinaFound = false;
+                for (cModule::SubmoduleIterator iter(network); !iter.end(); iter++) {
+                    subModule = iter();
+                    string className = subModule->getClassName();
+                    EV << "[LocalFilter::initializeAttacks()] 'ExMachina' module found " << endl;
+                    // ExMachina found
+                    if (className == "ExMachina") {
+                        exMachinaFound = true;
+                        break;
+                    }
+                }
+                
+                // if ExMachina found
+                if (exMachinaFound == true) {
+                    ExMachina* exMachina = check_and_cast<ExMachina*>(subModule);
+                    exMachina->scheduleDisableAttack(physicalAttacks[i]);
+                }
+                else {
+                    opp_error("Error: ExMachina module not found in the network, please add it in the ned file");
+                }
+                
+            }
+            
+            // schedule physical actions 'destroy' and 'move'
+            else {
+                selfMessage = new cMessage("Fire physical attack", (short) attack_t::PHYSICAL);
+                selfMessage->addPar("attack");
+                selfMessage->par("attack").setPointerValue(attack);
+                scheduleAt(physicalAttacks[i]->getOccurrenceTime(), selfMessage);
+            }
 		}
 	}
 	
 	// schedule self messages according to the occurrence time and attach to it the conditional attacks
 	if( conditionalAttacks.size() > 0 ){	
-		for(size_t i=0; i<conditionalAttacks.size(); i++){
+		for(size_t i = 0; i < conditionalAttacks.size(); i++){
 			selfMessage = new cMessage("Fire conditional attack", (short) attack_t::CONDITIONAL);	
 			selfMessage->addPar("attack");
 			selfMessage->par("attack").setPointerValue(conditionalAttacks[i]->getAttack());
@@ -157,28 +196,30 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 		return command_t::DISCARD;
 	}
     // the node is alive
-	else{
+	else {
 		// check if msg is a selfMessage
         bool isSelfMessage = msg->isSelfMessage();
 		if (isSelfMessage) {
 			return command_t::SELFMESSAGE;
 		}
         // msg is not a selfMessage
-		else{
+		else {
 			// check the arrival gate
 			string arrivalGateName = msg->getArrivalGate()->getName();
 			bool isFromGlobalFilter = (arrivalGateName.find("global") != std::string::npos);
 			
             // check if msg came from globalfilter
-            if (isFromGlobalFilter) {
+            if (isFromGlobalFilter) {			
 				return command_t::GLOBALFILTER;
 			}
             
             // msg does not came from globalfilter
-			else{
+			else {
 				// conditional attacks are directed only toward packets
 				bool isPacket = msg->isPacket();
 				if (isPacket) {
+					bool isDescendingPacket = (arrivalGateName.find("sup$i") != std::string::npos);
+
 					// add the necessary parameters to execute conditional attacks
 					// add isApplicationPacket parameter
 					bool isFromApp = (std::string(msg->getArrivalGate()->getFullName()).find("app")) != std::string::npos;
@@ -212,14 +253,15 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 					}
 				}
 				
-                else{
+                else {
 					return command_t::NOATTACK;
 				}
 			}
 		}
 	}
-	
 }
+
+
 
 
 void LocalFilter::forgeInterfaceTable()
@@ -306,7 +348,7 @@ void LocalFilter::initialize(int stage)
 
 
 void LocalFilter::handleMessage(cMessage* msg)
-{		
+{
 	//EV << "LocalFilter::handleMessage has intercepted a message" << endl;
     
     double delay = 0.0;	
@@ -314,26 +356,26 @@ void LocalFilter::handleMessage(cMessage* msg)
 	switch (planOperation(msg)) {
 	
 		// the node is destroyed then discard all messages
-		case command_t::DISCARD:{
+		case command_t::DISCARD: {
 			delete msg;
 			return;
 		}
 		
 		// the received message is a self message
-		case command_t::SELFMESSAGE:{	
+		case command_t::SELFMESSAGE: {
 			attack_t msgKind = (attack_t) msg->getKind(); 	
 	
-			switch(msgKind){
+			switch(msgKind) {
 		
 				// immediatly execute physical attacks
-				case attack_t::PHYSICAL:{		
+				case attack_t::PHYSICAL: {		
 					PhysicalAttack* physicalAttack = (PhysicalAttack*) (msg->par("attack").pointerValue());
 					physicalAttack->execute();			
 					break;
 				}
 				
 				// enable conditional attacks (to execute them must also be satisfied the filter) 
-				case attack_t::CONDITIONAL:{
+				case attack_t::CONDITIONAL: {
 					ConditionalAttack* conditionalAttack = (ConditionalAttack*) (msg->par("attack").pointerValue());
 					enabledConditionalAttacks.push_back(conditionalAttack);
 					break;
@@ -346,9 +388,7 @@ void LocalFilter::handleMessage(cMessage* msg)
 		}
 		
 		
-		case command_t::GLOBALFILTER:{
-			//EV << "----- ----- ----- PUTMSG FROM GLOBAL FILTER" << endl;
-
+		case command_t::GLOBALFILTER: {
 			// local filter receives only PutReq
 			if (isPutReq(msg)) {
 
@@ -367,32 +407,31 @@ void LocalFilter::handleMessage(cMessage* msg)
 					return;
 				}
 
-				// make an hard copy of the carried packet (putReq will be destroyed)
+				// make a hard copy of the carried packet (putReq will be destroyed)
 				carriedPacket = hardCopy((cPacket*)(carriedPacket));
 				
+				/* //forge the sending data
+				forgeSendingData(carriedPacket);
+				direction = putReq->getDirection();
+				 //handle the carriedPacket
+				switch (direction) {
 				
-				// forge the sending data
-				//forgeSendingData(carriedPacket);
-				//direction = putReq->getDirection();
-				// handle the carriedPacket
-				//switch (direction) {
-				//
-				//	case direction_t::TX: {
-				//	
-				//		cGate* arrivalGate;
-				//		arrivalGate = carriedPacket->getArrivalGate();
-				//		send(carriedPacket, coupledGates[arrivalGate]); 
-				//		break;
-				//		// call forgeSendingData!!!
-				//	
-				//	}
-				//	
-				//	case direction_t::RX: {
-				//		
-                //      break;
-				//	}			
-				//
-				//}
+					case direction_t::TX: {
+					
+						cGate* arrivalGate;
+						arrivalGate = carriedPacket->getArrivalGate();
+						send(carriedPacket, coupledGates[arrivalGate]); 
+						break;
+						// call forgeSendingData!!!
+					
+					}
+					
+					case direction_t::RX: {
+						
+                      break;
+					}			
+				
+				}*/
 				
 				string outputGateOverallName;				
 				string outputGateName;
@@ -410,7 +449,6 @@ void LocalFilter::handleMessage(cMessage* msg)
 				tokens[1].pop_back();
 				outputGateIndex = atoi(tokens[1].c_str());
 				outputGate = gate(outputGateName.c_str(), outputGateIndex);
-
 				send(carriedPacket, outputGate);
 				
 
@@ -425,20 +463,15 @@ void LocalFilter::handleMessage(cMessage* msg)
 			cGate* arrivalGate;
 			vector<cMessage*> generatedPackets;
 			vector<double> delays;
-			
-			//EV << "----- ----- ----- entering 'conditional' case" << endl;
-			
+					
 			// perform all enabled conditional attacks
 			for (size_t i = 0; i < enabledConditionalAttacks.size(); i++) {
 						
 				generatedPackets.clear();
 				delays.clear();
-
-				//EV << "----- ----- ----- performing Conditional attacks" << endl;
-				
+			
 				// packet filter match
 				if (enabledConditionalAttacks[i]->matchPacketFilter(msg)) {
-					//EV << "----- ----- ----- packet filter match" << endl;
 					
 					enabledConditionalAttacks[i]->execute(&msg, generatedPackets, delays, delay);								
 					
@@ -507,7 +540,7 @@ void LocalFilter::handleMessage(cMessage* msg)
 		}
 		
 			
-		case command_t::NOATTACK:{
+		case command_t::NOATTACK: {
 			cGate* arrivalGate = msg->getArrivalGate();
 			send(msg, coupledGates[arrivalGate]);
 			return;
@@ -570,9 +603,3 @@ void LocalFilter::forgeSendingData (cMessage* msg)
 		EV << "LocalFilter::forgeSendingData hasn't find the outputGate parameter or the parameter is 'none'" << endl;
 	}
 }
-
-
-
-
-
-

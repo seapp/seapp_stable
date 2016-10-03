@@ -49,6 +49,8 @@ int getPacketLayer(cPacket* packet);
  */
 int layertoi(const string layer);
 
+bool isControlInfo(const string layer);
+
 /**
  * @brief Set recursively a packet's parameter (and its encapsulated ones)
  */
@@ -61,6 +63,10 @@ void setParameterRecursively(cMessage* msg, const string parameterName, const bo
  * @return	the pointer to the (new) copied packet, or nullptr if problems occur
  */
 cPacket* hardCopy(cPacket* packetToCopy);
+
+bool hasPayload(cMessage* msg);
+
+bool getParamFromEncapsulatedPacket(cMessage* msg, const string parameterName);
 
 /**
  * @brief Compare two elements by means of a specified operator.
