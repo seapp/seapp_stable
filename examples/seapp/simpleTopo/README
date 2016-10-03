@@ -1,0 +1,17 @@
+Simple topology with two clients and one server connected with an ethernet switch.
+
+There are 3 available configurations:
+
+1) [General]: Representation of an attack free scenario
+
+2) [Simple_attack]: Client2 injects fake packets in the network at t=90s.
+	- attack discription: simple_attack.adl
+	- ./run_simple_attack.sh: script to produce .xml interpreter's output
+	
+3) [Disable]: Client2 is disabled at t=20s.
+	- attack description: disable.adl
+	- ./run_disable.sh: script to produce .xml interpreter's output
+
+Use './run.sh' to run the simulation.
+
+

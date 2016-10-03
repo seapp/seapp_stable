@@ -1,0 +1,2 @@
+#disable node id=5 (client2) at occurence time 20s
+disable (5, 20)
