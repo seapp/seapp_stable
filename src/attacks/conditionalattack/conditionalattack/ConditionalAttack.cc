@@ -16,6 +16,8 @@
 #include "SEAPPExpression.h"
 #include "Create.h"
 
+#include "IPv4Address.h"
+
 
 ConditionalAttack::ConditionalAttack() : AttackBase(attack_t::CONDITIONAL)
 {
@@ -31,7 +33,6 @@ ConditionalAttack::~ConditionalAttack()
 	EV << "ConditionalAttack::~ConditionalAttack invoked" << endl;
     delete packetFilter;
 }
-
 
 void ConditionalAttack::addAction(ActionBase* action)
 {
@@ -60,11 +61,7 @@ bool ConditionalAttack::matchPacketFilter(cMessage* packet) const
 {
     // check if the current layer contains all the informations
 	int packetLayer = getPacketLayer((cPacket*)packet);
-	
-	// check if its layer independent ==> if the parameter exists
-    // ..alex
-
-	
+		
 	if (packetLayer > minimumInvolvedLayer) {
         return false;
     }
@@ -153,12 +150,14 @@ void ConditionalAttack::execute(cMessage** packet, vector<cMessage*> &generatedP
 				packetName = change->getPacketName();
 				packetPosition = packetTable[packetName];
 				
-				bool isRandomValue;
+				// <A.S>
+				//bool isRandomValue;
 				string valueName;
 				string value;
 
 				valueName = change->getValue();
-				isRandomValue = (valueName == "RANDOM");		
+				// <A.S>
+				//isRandomValue = (valueName == "RANDOM");		
 				
 				// process the original intercepted packet
 				if (packetPosition == -1) {
@@ -169,7 +168,8 @@ void ConditionalAttack::execute(cMessage** packet, vector<cMessage*> &generatedP
 					targetPacket = &generatedPackets[packetPosition];
 				}
 				
-				if (isRandomValue) {
+				// <A.S>
+				/*if (isRandomValue) {
 					double randomValue;
 					double maxValue;
 					double minValue;
@@ -180,13 +180,38 @@ void ConditionalAttack::execute(cMessage** packet, vector<cMessage*> &generatedP
 					randomValue = minValue + ( dblrand() * (maxValue - minValue) );
 					
 					value = to_string(randomValue); 
+				}*/
+				
+				// <A.S>
+				// check if its a name of a packet
+			    map<string, int>::iterator it = packetTable.find(valueName);
+			    
+				if (it != packetTable.end()) {
+				    //retrieve the packet
+				    int position = (*it).second;
+				    cMessage **payload = &generatedPackets[position];			    		    
+				    change->execute(targetPacket, payload);
+                    break;
+				    
 				}
 				else {
-					value = variableTable[valueName]->getValue();
-				}
-				
-				change->execute(targetPacket, value);
-				break;
+				    if (isRandomValue(valueName)) {
+				        if (valueName == "RANDOM_IP") {
+				            //check if there is specific network/netmask
+				            if (networkParameters.getNetworkAddress().empty()) 
+				                value = valueName;
+				            else 
+				                value = (IPv4Address(stoul(generateRandomValue(networkParameters.getNetworkAddress(), networkParameters.getNetmask())))).str();				            
+				        }
+				        else
+				            value = valueName;
+				    }
+				    else
+					    value = variableTable[valueName]->getValue();
+
+				    change->execute(targetPacket, value);
+				    break;
+			    }
 			}
 			
 			case action_t::SEND: {
@@ -288,3 +313,7 @@ void ConditionalAttack::execute(cMessage** packet, vector<cMessage*> &generatedP
 	}
 
 }
+
+
+
+

@@ -91,4 +91,8 @@ attack_t to_attack_type(const string type)
 
 }
 
-
+// <A.S>
+void AttackBase::setNetworkParameters(string networkAddress, string netmask) {  
+    networkParameters.setNetworkAddress(networkAddress);
+    networkParameters.setNetmask(netmask);
+}

@@ -19,9 +19,9 @@ void Disable::execute () const {
     
     EV << "[Disable::execute()] invoked" << endl;
     targetNode->callFinish();
-    // <A.S> : Clean up before node's disappearance. Release all active listeners of the node.
-    NodeRelease *release = new NodeRelease();
-    release->unsubscribeAndDeleteListeners(targetNode);
+    // <A.S> : Clean up before node's disappearance. Release all listeners.
+    NodeRelease *request = new NodeRelease();
+    request->unsubscribeAndDeleteListeners(targetNode);
     targetNode->deleteModule();
     
 }

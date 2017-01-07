@@ -153,7 +153,7 @@ void Parser::parseConfigurationFile(const attack_t attackTypeTarget, vector<Atta
 			}
 			else {
 				msg.clear();
-				msg.append("Parser::parse has discarded the '" + xmlTagLevel1 + "' node just found");
+				msg.append("Parser::parse has discarded the '" + xmlTagLevel1 + "' node just found2");
 				EV_INFO << msg << endl;
 			}
 			
@@ -444,7 +444,7 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 								packetName.assign(tokens[i+1]);
 							}
 						}
-
+						                        
 						Change *change = new Change(fieldName, value);
 						change->setPacketName(packetName);
 						attack->addAction(change);
@@ -524,7 +524,6 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 						
 						Put* put = new Put(direction, forwardingDelay, isStatUpdated);
 						put->setPacketName(packetName);
-						
 						// populate the list of recipient nodes
 						for (size_t i = 0; i < tokenizedRecipientNodes.size(); i++) {
 							put->addRecipientNode(atoi(tokenizedRecipientNodes[i].c_str()));
@@ -537,7 +536,7 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 					
 					// Retrieve
 					case action_t::RETRIEVE: {
-					
+									
 						string packetName;
 						string fields;
 						string variableName;

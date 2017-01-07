@@ -30,7 +30,7 @@ simple Loopback
     parameters:
         int mtu @unit("B") = default(4470B);
         @display("i=block/rxtx");
-
+		bool doRegisterAtIft = default(true);
         @signal[dropPkBitError](type=cPacket);
         @signal[packetSentToUpper](type=cPacket);
         @signal[packetReceivedFromUpper](type=cPacket);

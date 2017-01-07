@@ -120,7 +120,7 @@ void MACBase::registerInterface()  //XXX registerInterfaceIfInterfaceTableExists
 {
     ASSERT(interfaceEntry == NULL);
     IInterfaceTable *ift = InterfaceTableAccess().getIfExists();
-    if (ift) {
+    if (ift && par("doRegisterAtIft").boolValue()) {
         interfaceEntry = createInterfaceEntry();
         ift->addInterface(interfaceEntry);
     }

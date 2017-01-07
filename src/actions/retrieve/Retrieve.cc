@@ -14,7 +14,7 @@ Retrieve::Retrieve(const string fields, const string variableName) : ActionBase(
 	vector<string> tokens;
 	tokenize(tokens, fields, '.');
 
-	// A.S
+	// <A.S>
 	// involvedLayer = layertoi(tokens[0]);
 	if ((tokens[0] == "controlInfo") || (tokens[0]=="sending") || tokens[0]=="attackInfo") {
 		this->externalInfo.assign(tokens[0]);
@@ -62,7 +62,7 @@ Variable* Retrieve::execute(cMessage* msg)
 	return variable;
 }
 
-// A.S
+// <A.S>
 Variable* Retrieve::executeOnField(cMessage* msg) {
 	cClassDescriptor* descriptor; 
 	int fieldIndex;
@@ -107,7 +107,7 @@ Variable* Retrieve::executeOnField(cMessage* msg) {
 	return new Variable(value, get_variable_format(value));
 }
 
-// A.S
+// <A.S>
 Variable* Retrieve::executeOnExternalInfo(cMessage* msg) {
 	string value;
 	if(externalInfo == "attackInfo") {

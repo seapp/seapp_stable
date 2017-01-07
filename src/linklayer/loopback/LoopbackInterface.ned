@@ -47,6 +47,7 @@ module LoopbackInterface like INic
         lo: Loopback {
             parameters:
                 @display("p=98,207");
+
         }
     connections:
         upperLayerIn --> { @display("m=n"); } --> outputHook[0].in if numOutputHooks > 0;

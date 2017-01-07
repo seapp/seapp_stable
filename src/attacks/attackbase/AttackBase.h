@@ -31,6 +31,17 @@ enum class attack_t {
 	UNCONDITIONAL
 };
 
+// <A.S>
+class NetworkParameters {
+    private:		    
+        string networkAddress;
+        string netmask;
+    public:
+        void setNetworkAddress(string netAddress) {networkAddress = netAddress;}
+        void setNetmask(string mask) {netmask = mask; }
+        string getNetworkAddress() { return networkAddress; }
+        string getNetmask() { return netmask; }
+};
 
 class AttackBase {
 
@@ -45,6 +56,9 @@ class AttackBase {
 		map<string, Variable*> variableTable;
         // stack for operations
 		stack<Variable> variableStack;
+		
+		// <A.S>
+		NetworkParameters networkParameters;
 
 	public:
 		/** @brief Constructor */
@@ -64,6 +78,9 @@ class AttackBase {
 
         /** @brief Get an action composing the attack */
         ActionBase* getAction(size_t index) const;
+        
+		// <A.S>
+		void setNetworkParameters(string networkAddress, string netmask);
 
 };
 
@@ -73,5 +90,7 @@ class AttackBase {
  */
 string to_string(const attack_t type);
 attack_t to_attack_type(const string type); 
+
+
 
 #endif

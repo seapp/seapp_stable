@@ -14,6 +14,8 @@
 #include <string>
 #include <omnetpp.h>
 
+#include "IPv4Address.h"
+
 
 using namespace std;
 
@@ -49,8 +51,6 @@ int getPacketLayer(cPacket* packet);
  */
 int layertoi(const string layer);
 
-bool isControlInfo(const string layer);
-
 /**
  * @brief Set recursively a packet's parameter (and its encapsulated ones)
  */
@@ -63,10 +63,6 @@ void setParameterRecursively(cMessage* msg, const string parameterName, const bo
  * @return	the pointer to the (new) copied packet, or nullptr if problems occur
  */
 cPacket* hardCopy(cPacket* packetToCopy);
-
-bool hasPayload(cMessage* msg);
-
-bool getParamFromEncapsulatedPacket(cMessage* msg, const string parameterName);
 
 /**
  * @brief Compare two elements by means of a specified operator.
@@ -145,5 +141,21 @@ float evaluateArithmetic(T f1, T f2, const string comp_operator) {
     
 }
 
+// <A.S>
+bool hasPayload(cMessage* msg);
+// <A.S>
+bool getParamFromEncapsulatedPacket(cMessage* msg, const string parameterName);
+// <A.S>
+string generateRandomValue(const char * fieldType);
+// <A.S>
+string generateRandomValue(string networkAddress, string netmask);
+// <A.S>
+bool isRandomValue(string value);
+// <A.S>
+string getValueType(string value);
+// <A.S>
+bool isControlInfo(const string layer);
+// <A.S>
+int generateRandomIntValue(int a, int b);
 
 #endif

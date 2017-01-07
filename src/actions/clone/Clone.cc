@@ -33,8 +33,4 @@ void Clone::execute(cMessage** clonePacket, const cMessage* originalPacket) cons
 {
 	*clonePacket = (cMessage*) hardCopy((cPacket*) originalPacket);	
 
-	// <A.S>
-	bool hasParam = (*clonePacket)->hasPar("fromGlobalFilter");	
-	if(hasParam && strcmp(originalPacket->getOwner()->getName(), "localFilter") == 0)
-		setParameterRecursively(*clonePacket, "fromGlobalFilter", false);
 }

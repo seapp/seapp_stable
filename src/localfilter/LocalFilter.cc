@@ -22,6 +22,8 @@
 
 #include "ExMachina.h"
 
+#include "FlatNetworkConfigurator.h"
+#include "IPv4NetworkConfigurator.h"
 
 Define_Module(LocalFilter);
 
@@ -69,6 +71,10 @@ void LocalFilter::initializeGates()
 	// local filter interposed between layers 2 and 1
 	matchingGatesNames.insert( pair<string,string> ("ppp_phy_inf$i","ppp_phy_sup$o") );	
 	matchingGatesNames.insert( pair<string,string> ("ppp_phy_sup$i","ppp_phy_inf$o") );	
+	
+	// local filter interposed between layers 2 and 1 [eth]
+	matchingGatesNames.insert( pair<string,string> ("eth_phy_inf$i","eth_phy_sup$o") );	
+	matchingGatesNames.insert( pair<string,string> ("eth_phy_sup$i","eth_phy_inf$o") );	
 	
 	// local filter and global filter
 	matchingGatesNames.insert( pair<string,string> ("global_filter$i","global_filter$o") );	
@@ -181,6 +187,8 @@ void LocalFilter::initializeAttacks()
 			selfMessage->addPar("attack");
 			selfMessage->par("attack").setPointerValue(conditionalAttacks[i]->getAttack());
 			scheduleAt(conditionalAttacks[i]->getOccurrenceTime(), selfMessage);
+			
+			
 		}
 	}
 
@@ -218,6 +226,7 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 				// conditional attacks are directed only toward packets
 				bool isPacket = msg->isPacket();
 				if (isPacket) {
+				    // <A.S>
 					bool isDescendingPacket = (arrivalGateName.find("sup$i") != std::string::npos);
 
 					// add the necessary parameters to execute conditional attacks
@@ -241,6 +250,25 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 					if (isPacket && !hasParameter) {
 						msg->addPar("isToSend");
 						msg->par("isToSend").setBoolValue(false);
+					}
+
+					// <A.S>
+					// Add fromGlobalFilter parameter
+					// param is attached only to the outgoing packets
+					hasParameter = msg->hasPar("fromGlobalFilter");
+					if (isPacket && !hasParameter) {
+						if(isDescendingPacket) {
+							msg->addPar("fromGlobalFilter");
+							// if the packet is new then add parameter and init it to false						
+							if (!hasPayload(msg)) {
+								msg->par("fromGlobalFilter").setBoolValue(false);
+							}
+							// else copy the value of the param of the encapsulated packet to persist consistency	
+							else {
+								bool value = getParamFromEncapsulatedPacket(msg, "fromGlobalFilter");
+								msg->par("fromGlobalFilter").setBoolValue(value);
+							}
+						}
 					}
 				
 					bool isConditionalEnabled = enabledConditionalAttacks.size() > 0;
@@ -279,15 +307,6 @@ void LocalFilter::forgeInterfaceTable()
 	int maxEthIndex = 0;
 	int numberOfEthInterfaces = 0;
 	int numberOfInterfaces = interfaceTable->getNumInterfaces();
-	
-	// print the original interface table
-	//for (int i = 0; i < numberOfInterfaces; i++) {  
-	//	info.clear();
-	//	interfaceEntry = interfaceTable->getInterface(i);
-	//	info.append(interfaceEntry->detailedInfo());
-	//	EV <<"******************** before forgeInterfaceTable() ********************" << endl;
-	//	EV << info << endl;
-	//}
 
 	// couple network-layer gate index having NIC
 	for (int i = 0; i < numberOfInterfaces; i++){
@@ -325,14 +344,6 @@ void LocalFilter::forgeInterfaceTable()
 	
 	}
 
-	// print the forged interface table	
-	//for (int i =0; i < numberOfInterfaces; i++) {
-	//	info.clear();
-	//	interfaceEntry = interfaceTable->getInterface(i);
-	//	info.append(interfaceEntry->detailedInfo());
-	//	EV << "******************** after forgeInterfaceTable() ********************" << endl;
-	//	EV << info << endl;
-	//}	
 }
 
 
@@ -342,9 +353,33 @@ void LocalFilter::initialize(int stage)
 	if (stage == 4) {
 		forgeInterfaceTable();
 		initializeGates();
+		// <A.S>
+		getNetworkParameters();
+		
 		initializeAttacks();
+
 	}
 }
+
+// <A.S>
+// get the network address and netmask from the 'configurator' module
+//TODO change or extend for IPv4NetworkConfigurator module
+void LocalFilter::getNetworkParameters() {
+    if (getParentModule()->getParentModule()->getSubmodule("configurator")!= NULL) {
+        if (check_and_cast<FlatNetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator")) != NULL) {
+            FlatNetworkConfigurator *fc = check_and_cast<FlatNetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator"));
+            networkAddr = fc->getNetworkAddress();
+            netmask = fc->getNetmask();
+        }
+        else if (check_and_cast<IPv4NetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator")) != NULL) {
+            //random IPs within all ranges will be generated
+            networkAddr = "";
+            netmask = "";      
+        }
+    }
+    
+}
+
 
 
 void LocalFilter::handleMessage(cMessage* msg)
@@ -377,6 +412,8 @@ void LocalFilter::handleMessage(cMessage* msg)
 				// enable conditional attacks (to execute them must also be satisfied the filter) 
 				case attack_t::CONDITIONAL: {
 					ConditionalAttack* conditionalAttack = (ConditionalAttack*) (msg->par("attack").pointerValue());
+					// <A.S>
+					conditionalAttack->setNetworkParameters(networkAddr, netmask);
 					enabledConditionalAttacks.push_back(conditionalAttack);
 					break;
 				}
@@ -401,6 +438,7 @@ void LocalFilter::handleMessage(cMessage* msg)
 				
 				// check if the carried msg is a packet
 				carriedPacket = putReq->getMsg();
+				
 				if (!carriedPacket->isPacket()) {
 					//EV << "LocalFilter::handleMessage the received PutMsg doesn't carry a packet" << endl;
 					delete msg;
@@ -409,29 +447,6 @@ void LocalFilter::handleMessage(cMessage* msg)
 
 				// make a hard copy of the carried packet (putReq will be destroyed)
 				carriedPacket = hardCopy((cPacket*)(carriedPacket));
-				
-				/* //forge the sending data
-				forgeSendingData(carriedPacket);
-				direction = putReq->getDirection();
-				 //handle the carriedPacket
-				switch (direction) {
-				
-					case direction_t::TX: {
-					
-						cGate* arrivalGate;
-						arrivalGate = carriedPacket->getArrivalGate();
-						send(carriedPacket, coupledGates[arrivalGate]); 
-						break;
-						// call forgeSendingData!!!
-					
-					}
-					
-					case direction_t::RX: {
-						
-                      break;
-					}			
-				
-				}*/
 				
 				string outputGateOverallName;				
 				string outputGateName;
@@ -448,14 +463,14 @@ void LocalFilter::handleMessage(cMessage* msg)
 				// remove last char ']'
 				tokens[1].pop_back();
 				outputGateIndex = atoi(tokens[1].c_str());
+				
+				
 				outputGate = gate(outputGateName.c_str(), outputGateIndex);
 				send(carriedPacket, outputGate);
-				
-
 			}
+            delete msg;
+            return;	
 			
-			delete msg;
-			return;
 		}
 		
 		
@@ -463,7 +478,7 @@ void LocalFilter::handleMessage(cMessage* msg)
 			cGate* arrivalGate;
 			vector<cMessage*> generatedPackets;
 			vector<double> delays;
-					
+
 			// perform all enabled conditional attacks
 			for (size_t i = 0; i < enabledConditionalAttacks.size(); i++) {
 						
@@ -471,8 +486,8 @@ void LocalFilter::handleMessage(cMessage* msg)
 				delays.clear();
 			
 				// packet filter match
-				if (enabledConditionalAttacks[i]->matchPacketFilter(msg)) {
-					
+				if (enabledConditionalAttacks[i]->matchPacketFilter(msg)) {		
+				    					
 					enabledConditionalAttacks[i]->execute(&msg, generatedPackets, delays, delay);								
 					
 					// send the original packet if not dropped 
@@ -525,30 +540,22 @@ void LocalFilter::handleMessage(cMessage* msg)
 						}
 					}
 					
-					return;
-					
+					return;				
 				}
 				// packet filter does not match
 				else{
 					arrivalGate = msg->getArrivalGate();
-					send(msg, coupledGates[arrivalGate]);
-				}
-				
+					send(msg, coupledGates[arrivalGate]);			
+				}	
 			}
-
 			return;
-		}
-		
-			
+		}	
 		case command_t::NOATTACK: {
 			cGate* arrivalGate = msg->getArrivalGate();
 			send(msg, coupledGates[arrivalGate]);
 			return;
-		}
-			
+		}		
 	}
-	
-	// EV << "LocalFilter::handleMessage ended succesfully" << endl;
 }
 
 
@@ -586,7 +593,6 @@ void LocalFilter::forgeSendingData (cMessage* msg)
                 break;
             }
         }
-        
         inputGateId = inputGate->getId();
         
         // find the previous module (i.e. the module connected to the input gate)
@@ -603,3 +609,9 @@ void LocalFilter::forgeSendingData (cMessage* msg)
 		EV << "LocalFilter::forgeSendingData hasn't find the outputGate parameter or the parameter is 'none'" << endl;
 	}
 }
+
+
+
+
+
+

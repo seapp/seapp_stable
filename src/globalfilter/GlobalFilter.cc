@@ -12,6 +12,8 @@
 #include "omnetpp.h"
 #include <string>
 
+#include "FlatNetworkConfigurator.h"
+#include "IPv4NetworkConfigurator.h"
 
 Define_Module(GlobalFilter);
 
@@ -25,6 +27,7 @@ void GlobalFilter::initializeAttacks()
 	// schedule selfMessages in order to trigger the unconditional attacks
 	string index;
 	string selfMessageName;
+
 	for (size_t i = 0; i < unconditionalAttacks.size(); i++) {
 		index.assign(to_string(i));
 		selfMessageName.assign("Fire UnconditionalAttack[");
@@ -34,6 +37,7 @@ void GlobalFilter::initializeAttacks()
 		scheduleAt(unconditionalAttacks[i]->getOccurrenceTime(), selfMessage);
 	}
 
+
 	// delete parser
 	delete parser;
 }
@@ -41,6 +45,8 @@ void GlobalFilter::initializeAttacks()
 
 void GlobalFilter::initialize()
 {
+    // <A.S>
+	getNetworkParameters();
 	initializeAttacks();
 }
 
@@ -69,6 +75,8 @@ void GlobalFilter::handleMessage(cMessage* msg)
 		
 			// execute the unconditional attack
 			unconditionalAttack = (UnconditionalAttack*) (unconditionalAttacks[index]->getAttack());
+			// <A.S>
+			unconditionalAttack->setNetworkParameters(networkAddr, netmask);
 			unconditionalAttack->execute(generatedMessages);
 		
 			// deliver all the created put messages
@@ -85,7 +93,8 @@ void GlobalFilter::handleMessage(cMessage* msg)
 			else {
 				scheduleTime = frequency + (simTime().dbl());
 				cMessage* selfMessage = new cMessage( msgName.c_str(), (short) attack_t::UNCONDITIONAL);
-				scheduleAt( scheduleTime, selfMessage );
+
+				scheduleAt( scheduleTime, selfMessage );				
 			}
 			
 		}
@@ -137,7 +146,7 @@ void GlobalFilter::handlePutMessage(const cMessage* msg)
 			nextGateOwner = check_and_cast<cModule*>(nextGate->getOwner());
 			
 			if (recipientNodes[i] == nextGateOwner->getId()) {
-				PutReq* putReq = new PutReq(encapsulatedPacket, direction, isStatUpdated);
+				PutReq* putReq = new PutReq(encapsulatedPacket, direction, isStatUpdated);               
 				sendDelayed(putReq, forwardingDelay, "nodes$o", j);
 				break;
 			}
@@ -145,20 +154,33 @@ void GlobalFilter::handlePutMessage(const cMessage* msg)
 		}
 
 	}
-	
+	// <A.S>
+    delete msg;
 }
 
 
-void GlobalFilter::finishSpecific()
-{
+void GlobalFilter::finishSpecific() { }
+
+
+GlobalFilter::GlobalFilter() { }
+
+// <A.S>
+GlobalFilter::~GlobalFilter() { }
+
+// <A.S>
+void GlobalFilter::getNetworkParameters() {
+    if (getParentModule()->getParentModule()->getSubmodule("configurator")!= NULL) {
+        if (check_and_cast<FlatNetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator")) != NULL) {
+            FlatNetworkConfigurator *fc = check_and_cast<FlatNetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator"));
+            networkAddr = fc->getNetworkAddress();
+            netmask = fc->getNetmask();
+        }
+        if (check_and_cast<IPv4NetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator")) != NULL) {
+            //random IPs within all ranges will be generated
+            networkAddr = "";
+            netmask = "";
+        }
+    }
 }
 
 
-GlobalFilter::GlobalFilter()
-{
-}
-
-
-GlobalFilter::~GlobalFilter()
-{
-}

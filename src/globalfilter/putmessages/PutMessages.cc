@@ -33,7 +33,8 @@ PutMsg::~PutMsg()
 {
 	// release the ownership
 	drop(msg);
-	delete msg;
+	delete msg; 
+	
 }
 
 
@@ -100,6 +101,7 @@ double PutMsg::getForwardingDelay() const
 PutReq::PutReq(cMessage* msg, const direction_t direction, const bool isStatUpdated) : cMessage("PutReq", (short)put_t::REQ)
 {
 	this->msg = (cMessage*) hardCopy((cPacket*) msg);
+
 	// reset isFiltered
 	setParameterRecursively(this->msg, "isFiltered", false);
 	// take the ownership

@@ -40,8 +40,6 @@ enum class action_t : uint8_t{
 	SEND,
 	PUT,
 	EXPRESSION
-	// actually not supported by SEA++
-	//FAKEREAD
 };
 
 

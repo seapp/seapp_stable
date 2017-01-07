@@ -17,10 +17,11 @@ class Retrieve : public ActionBase {
 	private:
 		string fieldName;
 		string variableName;
-		// A.S
+		// <A.S>
 		string externalInfo;
 
 	private:
+	    // <A.S>
 		Variable* executeOnField(cMessage* msg);
 		Variable* executeOnExternalInfo(cMessage* msg);
 			

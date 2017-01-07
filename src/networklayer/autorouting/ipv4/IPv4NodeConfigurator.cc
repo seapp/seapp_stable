@@ -56,7 +56,8 @@ void IPv4NodeConfigurator::initialize(int stage)
             cModule *module = getModuleByPath(networkConfiguratorPath);
             if (!module)
                 throw cRuntimeError("Configurator module '%s' not found (check the 'networkConfiguratorModule' parameter)", networkConfiguratorPath);
-            networkConfigurator = check_and_cast<IPv4NetworkConfigurator *>(module);
+            //networkConfigurator = check_and_cast<IPv4NetworkConfigurator *>(module);
+            networkConfigurator = dynamic_cast<IPv4NetworkConfigurator *>(module);
         }
     }
     else if (stage == 1)

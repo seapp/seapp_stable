@@ -2,7 +2,7 @@
  * @file	NodeRelease.h
  * @author	Alexandra Stagkopoulou <alexandra.stagkopoulou@sics.se>
  * @brief	Clean up before node's disappearance. 
- 			Release all active listeners of the target node (module's & channel's listeners).
+ 			Release all the active listeners of the target node (module & channel).
  			Avoid unwanted warning messages.
  */
 

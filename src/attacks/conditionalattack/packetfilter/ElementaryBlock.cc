@@ -9,6 +9,8 @@
 #include "seapputils.h"
 #include "stdlib.h"
 
+#include "EtherFrame.h"
+
 
 ElementaryBlock::ElementaryBlock(vector<string> blockElements) : FilterBlock(block_t::ELEMENTARY, blockElements)
 {
@@ -31,6 +33,7 @@ int ElementaryBlock::getLayer() const
 
 bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 {
+
     // tokenize the full path to access to names of layer and fields
     vector<string> fullPath = tokenize(blockElements[1], '.');    
     
@@ -39,18 +42,36 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 	string actualValue;
 
 	// <A.S>
-	// if (blockLayer == 0) then the check is against controlInfo independently of message layer
+	// if (blockLayer == 0) then the check is against controlInfo independent info of message layer
 	if (blockLayer == 0) {
 		string fieldName = fullPath[1];
 	    if (msg->hasPar(fieldName.c_str())) {
+	    
 			//retrieve the value of the parameter
 			actualValue = to_string(msg->par(fieldName.c_str()).boolValue());
 	 	}
+	 	//OF_switch intercepts Ethernet frames. The parameter is encapsulated
+	 	else { //check the existence of the parameter in the encapsulated packet
+	 	    if (msg->isPacket()) {
+	 	        cPacket *packet = dynamic_cast<cPacket*>(msg);
+	 	        while (hasPayload(packet)) {
+	 	        
+	 	            //get the encapsulated packet
+                    packet = packet->getEncapsulatedMsg(); 
+                    
+                    //check if is has the parameter
+                    if (packet->hasPar(fieldName.c_str())) { 
+                        actualValue = to_string(packet->par(fieldName.c_str()).boolValue());
+                    }
+	 	        }
+	 	    }
+	 	}
 	}
-	
+	// <A.S>
 	else {
 	  	int msgLayer = getPacketLayer((cPacket*)msg);
 		cMessage* encapsulatedMsg = msg;
+		std::cout<<"elementary block. msgLayer = " << msgLayer << " block layer = " << blockLayer <<endl;
 		while (msgLayer < blockLayer) {
 			encapsulatedMsg = (cMessage*)(((cPacket*)encapsulatedMsg)->getEncapsulatedPacket());
 			if (encapsulatedMsg == nullptr) {
@@ -121,6 +142,6 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
             return true;
         }
     }
-    
+
     return false;
 }

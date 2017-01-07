@@ -25,6 +25,7 @@
 //A.S
 #include "ApplicationPacket_m.h"
 #include "SendApplicationPacket_m.h"
+#include "MeasurementData_m.h"
 
 CreateInfo::CreateInfo()
 { 
@@ -71,13 +72,20 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 					break;
 				}
 				
+				case type_t::MEASUREMENT_DATA: {
+				    *packet = (cPacket*) (new MeasurementData());  
+				    break;
+				}
+				
 				// in general, INET has not well structured packets of layer 5
 				default: {
 					*packet = new cPacket("CreatedPacket-Layer5", 0);
 					break;
 				}
 			}		
-						
+            // <A.S>
+            (*packet)->setByteLength(1);	
+            	
 			(*packet)->addPar("isFiltered");
 			(*packet)->par("isFiltered").setBoolValue(true);
 			
@@ -87,6 +95,7 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
 
+            // <A.S>
 			(*packet)->addPar("fromGlobalFilter");
 			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 
@@ -200,18 +209,26 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 					break;
 				}
 				
-				//A.S
+				// <A.S>
 				case type_t::APPLICATION_PACKET: {
 					controlInfo = new UDPDataIndication();
 					(*packet)->setControlInfo(controlInfo);
 					break;
 				}
+				// <A.S>
 				case type_t::SEND_APPLICATION_PACKET: {
 					controlInfo = new UDPSendCommand();
 					(*packet)->setControlInfo(controlInfo);					
 					break;
 				}
 				
+				// <A.S>
+				case type_t::MEASUREMENT_DATA: {
+				    (*packet)->setKind(TCP_C_SEND);
+				    controlInfo = new TCPSendCommand();
+				    (*packet)->setControlInfo(controlInfo);
+				    break;
+				}
 				// TODO add here the code to set other control infos for layer 5
 			}	
 		
@@ -223,11 +240,15 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			// create the right packet
 			if (type == type_t::UDP_OVER_IPV4) {
-				*packet = new UDPPacket("CreatedPacket-UDP", 0);	
+				*packet = new UDPPacket("CreatedPacket-UDP", 0);
+                // <A.S>
+                (*packet)->setByteLength(8);
 			}
 			
 			if (type == type_t::TCP_OVER_IPV4) {
 				*packet = new TCPSegment("CreatedSegment-TCP", 0);	
+                // <A.S>
+				(*packet)->setByteLength(20);
 			}
 			
 			// add & set parameters
@@ -239,7 +260,8 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
-
+            
+            // <A.S>
 			(*packet)->addPar("fromGlobalFilter");
 			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 			
@@ -276,6 +298,8 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 		
 			// TODO extend with others protocols
 			*packet = new IPv4Datagram("Created packet-IPv4Datagram", 0);
+			// <A.S>
+			(*packet)->setByteLength(20);
 			
 			// add & set parameters
 			(*packet)->addPar("isFiltered");
@@ -286,7 +310,8 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
-
+            
+            // <A.S>
 			(*packet)->addPar("fromGlobalFilter");
 			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 			
@@ -323,10 +348,14 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			
 				case type_t::PPPFRAME: {
 					*packet = new PPPFrame("CreatedPacket-PPP", 0);	
+					// <A.S>
+					(*packet)->setByteLength(7); 
 					break;
 				}
 				case type_t::ETHERNETIIFRAME: {
 					*packet = new EthernetIIFrame("CreatedPacket-EthernetIIFrame", 0);	
+					// <A.S>
+					(*packet)->setByteLength(18);
 					break;
 				}
 				case type_t::IDEALAIRFRAME: {
@@ -350,6 +379,7 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			(*packet)->addPar("isToSend");
 			(*packet)->par("isToSend").setBoolValue(false);
 
+            // <A.S>
 			(*packet)->addPar("fromGlobalFilter");
 			(*packet)->par("fromGlobalFilter").setBoolValue(false);
 			
@@ -423,11 +453,15 @@ type_t Create::getType (int layer, string typeCode)
 			if (typeCode == "0301") {
 				return type_t::CNCMD_UDP_DATA;
 			}
+			// <A.S>
 			if (typeCode == "1000" ) {
 				return type_t::APPLICATION_PACKET;
 			}
 			if (typeCode == "1001" ) {
 				return type_t::SEND_APPLICATION_PACKET;
+			}
+			if (typeCode == "1002") {
+			    return type_t::MEASUREMENT_DATA;
 			}
 
 		}
@@ -558,6 +592,7 @@ void Create::execute(cPacket **packet)
 	
 	setParameterRecursively(*packet, "isFiltered", true);
 	
+	// <A.S>
 	if (strcmp((*packet)->getOwner()->getName(), "globalFilter") == 0)
 		setParameterRecursively(*packet, "fromGlobalFilter", true);
 }

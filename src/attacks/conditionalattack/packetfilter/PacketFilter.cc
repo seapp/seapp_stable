@@ -147,12 +147,11 @@ bool PacketFilter::passPreMatchChecks(cMessage* msg) const
 
 bool PacketFilter::matchPacketFilter(cMessage* msg) const
 {    
-
     // check if the packet can be filtered
     if (passPreMatchChecks(msg) == false) {
         return false;
     }
-    
+
     // solve all blocks for the current message
     vector<bool> solved;
     for (size_t i = 0; i < filterBlocks.size(); i++) {
