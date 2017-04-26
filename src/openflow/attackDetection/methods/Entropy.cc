@@ -35,7 +35,6 @@ bool Entropy::entropyCalc(std::map<IPv4Address, int> &data) { //map: data set (d
 	int size = data.size();
 	alert = false;
 	std::map<IPv4Address, int>::iterator i =  data.begin();
-	
 	while (i!=data.end()) {
 		p = i->second/size;
 		if (p!=0)
@@ -46,9 +45,10 @@ bool Entropy::entropyCalc(std::map<IPv4Address, int> &data) { //map: data set (d
 	double entropy = (entropy_value/interval);
 	emit(entropySignal, entropy);
 	
-	if (entropy <= threshold) 
+	if (entropy <= threshold) {
 		alert = true;
-			
+	}
+		
 	return alert;
 
 }

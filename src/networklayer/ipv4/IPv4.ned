@@ -94,6 +94,10 @@ simple IPv4
         bool forceBroadcast = default(false);
         bool useProxyARP = default(true);
         @display("i=block/routing");
+        
+        // <A.S>
+        @signal[hops](type=int);
+        @statistic[hops](title="Hops number"; source=hops; record=vector, stats; interpolationmode=none);
     gates:
         input transportIn[] @labels(IPv4ControlInfo/down,TCPSegment,UDPPacket);
         output transportOut[] @labels(IPv4ControlInfo/up,TCPSegment,UDPPacket);

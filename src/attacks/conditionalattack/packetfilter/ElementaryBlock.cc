@@ -10,8 +10,8 @@
 #include "stdlib.h"
 
 #include "EtherFrame.h"
-
-
+#include "openflow.h"
+#include "IPv4Address.h"
 ElementaryBlock::ElementaryBlock(vector<string> blockElements) : FilterBlock(block_t::ELEMENTARY, blockElements)
 {
 }
@@ -42,11 +42,10 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 	string actualValue;
 
 	// <A.S>
-	// if (blockLayer == 0) then the check is against controlInfo independent info of message layer
+	// if blockLayer is 0, then check for controlInfo, independent info of message layer
 	if (blockLayer == 0) {
 		string fieldName = fullPath[1];
-	    if (msg->hasPar(fieldName.c_str())) {
-	    
+	    if (msg->hasPar(fieldName.c_str())) {	    
 			//retrieve the value of the parameter
 			actualValue = to_string(msg->par(fieldName.c_str()).boolValue());
 	 	}
@@ -71,7 +70,6 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 	else {
 	  	int msgLayer = getPacketLayer((cPacket*)msg);
 		cMessage* encapsulatedMsg = msg;
-		std::cout<<"elementary block. msgLayer = " << msgLayer << " block layer = " << blockLayer <<endl;
 		while (msgLayer < blockLayer) {
 			encapsulatedMsg = (cMessage*)(((cPacket*)encapsulatedMsg)->getEncapsulatedPacket());
 			if (encapsulatedMsg == nullptr) {
@@ -85,34 +83,37 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 		for (size_t i = 1; i < fullPath.size(); i++) {
 			pathOfFields.push_back(fullPath[i]);
 		}
-		  
+		
 		// try to follow the path of fields until the last field is reached
 		cClassDescriptor* descriptor = cClassDescriptor::getDescriptorFor(encapsulatedMsg);
 		void* compoundField = encapsulatedMsg;
 		int fieldIndex = -1;
+		string fieldName;
+		string structName;
 		for (size_t i = 0; i < pathOfFields.size(); i++) {
-			  
-			  // the first entry is packet's top level field
+			 fieldName = pathOfFields[i];  
+			// the first entry is packet's top level field
 			if (i==0) {
 				fieldIndex = descriptor->findField(encapsulatedMsg, pathOfFields[i].c_str());
 			}
 			else {
-				fieldIndex = descriptor->findField(compoundField, pathOfFields[i].c_str());
+			    if (descriptor != NULL)
+			        fieldIndex = descriptor->findField(compoundField, pathOfFields[i].c_str());
 			}
 			  
 			// field not found in the current packet
 			if (fieldIndex==-1) {
 				return false;
 			}
-			  
+
+            
 			// all entries (except the last) refer compound fields
 			if (i != pathOfFields.size()-1) {
-			 
-				string structName;
+				
 				// get the pointer-to the compound field
 				if (i==0) {
 					structName = descriptor->getFieldStructName(encapsulatedMsg, fieldIndex);
-					compoundField = descriptor->getFieldStructPointer(encapsulatedMsg, fieldIndex, 0);
+					compoundField = descriptor->getFieldStructPointer(encapsulatedMsg, fieldIndex, 0); 		
 				}
 				else {
 					structName = descriptor->getFieldStructName(compoundField, fieldIndex);
@@ -121,12 +122,26 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
 				  
 				// get the descriptor of the compound field
 				descriptor = cClassDescriptor::getDescriptorFor(structName.c_str());
-			  
+				
 			}
-			  
+			
 		}
-		// use the descriptor to get the last field's content
-		actualValue = descriptor->getFieldAsString((cObject*)compoundField, fieldIndex, 0);
+		
+		// <A.S>
+        if (descriptor == NULL) {
+            //the struct has not been defined in the .msg file. E.g it is defined in a .h file, so we need to know
+            //the fields of the struct. The fieldIndex for the last pathOfFields is -1
+            if (structName.find("oxm_basic_match") != string::npos) {
+                oxm_basic_match* match = (oxm_basic_match*)compoundField; // find the beginning of the struct
+                if(fieldName == "OFB_IPV4_DST") {
+                    actualValue = match->OFB_IPV4_DST.str();
+                }
+            }
+        }
+        else {
+		    // use the descriptor to get the last field's content
+            actualValue = descriptor->getFieldAsString((cObject*)compoundField, fieldIndex, 0);
+        }
 	}
         
     // retrieve the comparison operator from the block
@@ -137,7 +152,8 @@ bool ElementaryBlock::solveFilterBlock(cMessage* msg) const
     bool comparisonResult = false;
 
     for (size_t i = 0; i < acceptedValues.size(); i++) {
-        comparisonResult = evaluate(stod(actualValue), stod(acceptedValues[i]), comparisonOperator);
+        //comparisonResult = evaluate(stod(actualValue), stod(acceptedValues[i]), comparisonOperator);
+        comparisonResult = evaluate(actualValue, acceptedValues[i], comparisonOperator);
         if (comparisonResult == true) {
             return true;
         }

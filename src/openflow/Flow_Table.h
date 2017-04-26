@@ -56,7 +56,8 @@ class Flow_Table : public cSimpleModule
 {
 public:
     Flow_Table();
-    void addEntry(oxm_basic_match *match, entry_data* entry);
+    ~Flow_Table();
+    bool addEntry(oxm_basic_match *match, entry_data* entry);
     bool deleteEntry(oxm_basic_match *match);
     void deleteFlowTable();
     bool lookup(oxm_basic_match *match);

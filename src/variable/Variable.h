@@ -29,6 +29,7 @@ enum class variable_t{
 
 class Variable{
 // TODO make it private
+private:
 public:
     // value of the variable
     string value;
@@ -43,18 +44,20 @@ public:
     
     ~Variable();
 
-    Variable operator+(const Variable& obj) const;
-    Variable operator+(const int number) const;
+    Variable* operator+(const Variable& obj) const;  //<A.S>
+    Variable* operator+(const int number) const ;  //<A.S>
+
+    
     Variable& operator++();
     Variable& operator++(int);
 
-    Variable operator-(const Variable& obj) const;
+    Variable* operator-(const Variable& obj) const;  //<A.S>
     Variable& operator--();
     Variable& operator--(int);
 
-    Variable operator*(const Variable& obj) const;
-    Variable operator/(const Variable& obj) const;
-    Variable operator%(const Variable& obj) const;
+    Variable* operator*(const Variable& obj) const; //<A.S>
+    Variable* operator/(const Variable& obj) const; //<A.S>
+    Variable* operator%(const Variable& obj) const; //<A.S>
 
     Variable& operator=(const Variable& obj);
     Variable& operator+=(const Variable& obj);
@@ -103,5 +106,8 @@ string to_string(const variable_t type);
  * @brief Convert a variable_t type in a string if possible
  */
 variable_t to_variable_t(const string type);
+
+
+
 
 #endif

@@ -20,9 +20,9 @@ import inet.nodes.inet.Router;
 import inet.nodes.inet.StandardHost;
 import inet.networklayer.autorouting.ipv4.FlatNetworkConfigurator;
 
-import inet.openflow.nodes.*;
-import inet.openflow.DistanceChannel;
-import inet.openflow.utility.SpanningTree;
+import inet.ofomnet.openflow.nodes.*;
+import inet.ofomnet.openflow.DistanceChannel;
+import inet.ofomnet.openflow.utility.SpanningTree;
 
 network MultiController
 {

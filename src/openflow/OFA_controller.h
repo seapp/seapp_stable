@@ -13,11 +13,12 @@
 #include "IPv4Datagram.h"
 #include "Open_Flow_Message_m.h"
 #include "OFP_Packet_In_m.h"
+#include "OFP_Flow_Mod_m.h"
 #include "AttackDetection.h"
 
 class AttackDetection;
 
-class OFA_controller: public cSimpleModule, public cListener//, public TCPSocket::CallbackInterface
+class OFA_controller: public cSimpleModule, public cListener
 {
 public:
     OFA_controller();
@@ -55,6 +56,7 @@ protected:
     // <A.S>
     void sendEchoRequest();
     void handleEchoReply(Open_Flow_Message *of_msg);
+    void handleErrorMessage(Open_Flow_Message *of_msg);
 
 private:
     void checkEchoReplies();

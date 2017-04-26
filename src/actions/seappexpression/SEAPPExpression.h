@@ -20,6 +20,10 @@ class SEAPPExpression : public ActionBase {
 
 	private:
 		vector<string> expressionItems;
+
+		// <A.S>
+		Variable *leftOperand;
+		Variable *rightOperand;
 		
 	private:	
 		bool isAssignmentOperator(const string op);
@@ -41,7 +45,7 @@ class SEAPPExpression : public ActionBase {
 		 *  		The former contains variables considered by the expression, while the latter is used to actually execute the expression.
    		 *			At the end, the variable stored in the variable table and aimed at containing the expression result is updated
    		 */
-		 void execute(map<string, Variable*> *variableTable, stack<Variable> *variableStack);
+		 void execute(map<string, Variable*> *variableTable, stack<Variable*> *variableStack);
 
 };
 

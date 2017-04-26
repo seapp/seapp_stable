@@ -84,7 +84,7 @@ module Open_Flow_Switch_SEA
                 displayAddresses=false;        
                 @display("p=57,134");
         }
-         routingTable: RoutingTable {
+        routingTable: RoutingTable {
             parameters:
             	IPForward = IPForward;
                 routerId = "";

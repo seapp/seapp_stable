@@ -6,7 +6,6 @@
 
 #include "SEAPPExpression.h"
 
-
 bool SEAPPExpression::isAssignmentOperator(const string op)
 {
 	if ( (op == "=") || (op == "+=") || (op == "-=") || (op == "*=") || (op == "/=") || (op == "%=") ) {
@@ -21,103 +20,104 @@ SEAPPExpression::SEAPPExpression(const vector<string> expressionItems) : ActionB
 {
 	this->expressionItems = expressionItems;
 	involvedLayer = NONE_LAYER;	
+
+	leftOperand = new Variable();
+	rightOperand = new Variable();
 }
 
 
 SEAPPExpression::~SEAPPExpression()
 {  
+	delete leftOperand;
+	delete rightOperand;
 }
 
 
-void SEAPPExpression::execute(map<string, Variable*> *variableTable, stack<Variable> *variableStack)
-{	
-	Variable leftOperand;
-	Variable rightOperand;
-
-	for (size_t i = 0; i < expressionItems.size(); i++) {
-
-		map<string, Variable*>::iterator iter = variableTable->find(expressionItems[i]);
-		
-		// push the found operand into the stack
+void SEAPPExpression::execute(map<string, Variable*> *variableTable, stack<Variable*> *variableStack)
+{
+  	map<string, Variable*>::iterator resIt = variableTable->find("RESULT"); //<A.S>
+	   	  				    
+    for (size_t i = 0; i < expressionItems.size(); i++) {
+        map<string, Variable*>::iterator iter = variableTable->find(expressionItems[i]);
+        // push the found operand into the stack
 		if (iter != variableTable->end()) {
-			variableStack->push(*(iter->second));
-		}
-		// found an operator
+			variableStack->push((iter->second));
+	    }
+
+	    // found an operator
 		else {
 			string op = expressionItems[i];
-
 			// is an assignment operator
 			if (isAssignmentOperator(op)) {
-				
-				i++;
+			    i++;
 				string where = expressionItems[i];
 
 				// find the other operand
 				map<string, Variable*>::iterator jter = variableTable->find(where);
-
-				Variable value;
-
-				value = variableStack->top();
-				variableStack->pop();
-
+              
 				if ( op == "=")
-					*(jter->second) = value;
+					*(jter->second) = *variableStack->top();	   
 				else if ( op == "+=")
-					*(jter->second) += value;
+					*(jter->second) += *variableStack->top();	
 				else if ( op == "-=")
-					*(jter->second) -= value;
+					*(jter->second) -= *variableStack->top();	
 				else if ( op == "*=")
-					*(jter->second) *= value;
-				else if ( op == "/=")
-					*(jter->second) /= value;
+					*(jter->second) *= *variableStack->top();	
+				else if ( op == "/=")  
+					*(jter->second) /= *variableStack->top();	
 				else if ( op == "%=")
-					*(jter->second) %= value;
+					*(jter->second) %= *variableStack->top();	
 
+               	variableStack->top() = nullptr;
+               	variableStack->pop();           
 			}
 			// is not an assignment operator
-			else {
-				
-				// Retrieve the operands
-				rightOperand = variableStack->top();
+			else {	
+				*rightOperand = *(variableStack->top());
+				variableStack->top() = nullptr;
+                variableStack->pop();
+				    
+				*leftOperand = *(variableStack->top());
+				variableStack->top() = nullptr;
 				variableStack->pop();
 
-				leftOperand = variableStack->top();
-				variableStack->pop();
-				
-				// push the result of the operation into the stack
-				if ( op == "+")
-					variableStack->push( leftOperand + rightOperand );
-				else if ( op == "-")
-					variableStack->push( leftOperand - rightOperand );
-				else if ( op == "*")
-					variableStack->push( leftOperand * rightOperand );
-				else if ( op == "/")
-					variableStack->push( leftOperand / rightOperand );
-				else if ( op == "%")
-					variableStack->push( leftOperand % rightOperand );
-				else if ( op == "==")
-					variableStack->push( leftOperand == rightOperand );
-				else if ( op == ">")
-					variableStack->push( leftOperand > rightOperand );
-				else if ( op == "<")
-					variableStack->push( leftOperand < rightOperand );
-				else if ( op == ">=")
-					variableStack->push( leftOperand >= rightOperand );
-				else if ( op == "<=")
-					variableStack->push( leftOperand <= rightOperand );
-				else if ( op == "!=")
-					variableStack->push( leftOperand != rightOperand );
-				else if ( op == "&&")
-					variableStack->push( leftOperand && rightOperand );
-				else if ( op == "||")
-					variableStack->push( leftOperand || rightOperand );
+				if ( op == "+") {
+					Variable *temp = (*leftOperand + *rightOperand);
+					*(resIt->second) = *temp;
+					temp = nullptr;
+					delete temp;
+                }
+                else if ( op == "-") {
+                	Variable *temp = (*leftOperand - *rightOperand);
+					*(resIt->second) = *temp;
+					temp = nullptr;
+					delete temp;
+                }	
+				else if ( op == "*") {
+ 					Variable *temp = (*leftOperand * *rightOperand);
+					*(resIt->second) = *temp;
+					temp = nullptr;
+					delete temp;                    
+				}
+				else if ( op == "/") {
+					Variable *temp = (*leftOperand / *rightOperand);
+					*(resIt->second) = *temp;
+					temp = nullptr;
+					delete temp;                    
+				}
+				else if ( op == "%") {
+ 					Variable *temp = (*leftOperand % *rightOperand);
+					*(resIt->second) = *temp;
+					temp = nullptr;
+					delete temp;
+				}
 
-			}
-			
-		}
-
-	}
-
+				variableStack->push((resIt->second));
+                
+            }
+                
+       }
+	}    
 }
 
 

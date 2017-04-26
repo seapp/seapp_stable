@@ -20,7 +20,7 @@ Drop::~Drop()
 
 
 void Drop::execute(cMessage** packet) const
-{
+{   
 	delete *packet;
 	*packet = nullptr;
 }

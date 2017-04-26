@@ -21,11 +21,11 @@ import inet.nodes.inet.StandardHost;
 import inet.util.ThruputMeteringChannel;
 import inet.networklayer.autorouting.ipv4.FlatNetworkConfigurator;
 
-import inet.openflow.utility.kPartitionNetwork;
-import inet.openflow.nodes.*;
-import inet.openflow.DistanceChannel;
-import inet.openflow.utility.SpanningTree;
-import inet.openflow.utility.placeController;
+import inet.ofomnet.openflow.utility.kPartitionNetwork;
+import inet.ofomnet.openflow.nodes.*;
+import inet.ofomnet.openflow.DistanceChannel;
+import inet.ofomnet.openflow.utility.SpanningTree;
+import inet.ofomnet.openflow.utility.placeController;
 
 
 network Scenario_singleController

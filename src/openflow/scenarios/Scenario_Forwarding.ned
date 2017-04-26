@@ -19,8 +19,8 @@ import inet.nodes.ethernet.EtherSwitch;
 import inet.nodes.inet.Router;
 import inet.nodes.inet.StandardHost;
 import inet.networklayer.autorouting.ipv4.FlatNetworkConfigurator;
-import inet.openflow.nodes.Open_Flow_Controller;
-import inet.openflow.nodes.Open_Flow_Switch;
+import inet.ofomnet.openflow.nodes.Open_Flow_Controller;
+import inet.ofomnet.openflow.nodes.Open_Flow_Switch;
 import inet.util.ThruputMeteringChannel;
 
 

@@ -21,7 +21,7 @@ simple Forwarding like CtrlBehavior
         @display("i=block/rightarrow");
         bool isArpOracle = default(false);
         int domainID = default(-1);
-        string nedTypes = default("inet.nodes.inet.StandardHost inet.openflow.nodes.Open_Flow_Switch_SEA");
+        string nedTypes = default("inet.nodes.inet.StandardHost inet.ofomnet.openflow.nodes.Open_Flow_Switch_SEA");
     gates:
 
 }

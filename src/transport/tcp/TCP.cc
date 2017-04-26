@@ -157,7 +157,6 @@ void TCP::handleMessage(cMessage *msg)
         {
             // must be a TCPSegment
             TCPSegment *tcpseg = check_and_cast<TCPSegment *>(msg);
-
             // get src/dest addresses
             IPvXAddress srcAddr, destAddr;
 

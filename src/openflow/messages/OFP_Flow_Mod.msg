@@ -18,14 +18,13 @@ cplusplus {{
     #include "Open_Flow_Message_m.h"
 }};
 
-
+packet Open_Flow_Message;
 struct oxm_basic_match;
 struct ofp_action_output;
-packet Open_Flow_Message;
 
 // Modifications to a flow table by the controller.
 packet OFP_Flow_Mod extends Open_Flow_Message
-{ 
+{    
     uint64_t cookie; // Opaque controller-issued identifier. 
     uint64_t cookie_mask; // Mask used to restrict the cookie bits
                             //that must match when the command is
@@ -56,5 +55,4 @@ packet OFP_Flow_Mod extends Open_Flow_Message
     oxm_basic_match match; // Fields to match. Variable size. 
     ofp_action_output actions[];
     //struct ofp_instruction instructions[0]; // Instruction set 
-
-}
+};

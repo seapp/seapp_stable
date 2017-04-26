@@ -54,10 +54,12 @@ private:
     cMessage *timeoutMsg;
     Flow_Table *flow_table;
     double timeout;
+    bool fullTable;
     simsignal_t NF_FLOOD_PACKET;
     simsignal_t NF_SEND_PACKET;
     simsignal_t NF_NO_MATCH_FOUND;
     simsignal_t NF_PORT_STATUS;
+    static simsignal_t fullFlowTableSignal, rttSignal;
     
     void addNewFlowEntry(OFP_Flow_Mod *flow_mod_msg);
     void handlePortChange(uint16_t portNo);

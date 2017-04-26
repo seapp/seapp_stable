@@ -1,0 +1,13 @@
+Simple topology with 1 UDP client and 1 UDP server connected in one OpenFlow-enabled switch.
+The controller requests flow-statistics every 30sec.
+
+The simulation has 250 seconds duration.
+[General] configuration simulates normal conditions within the network where no attacks are present.
+
+[Simple_Attack] configuration simulates a compromised client that floods the server with fake packets. 
+The attack starts at simulation time 90s and its description is presented in the 'simple_attack.adl'. 
+
+[Disable] configuration simulates the disable of the server and the nodes dissapears from the simulation field when the attack is executed.
+
+Extend the configurations by adding your own attack descriptions. Describe the attack in an '.adl' file and convert the file to a '.xml' by running the interperter under the command
+'../../../interpreter/interpreter/interpreter.py -i inputFile.adl -o outputFile.xml'

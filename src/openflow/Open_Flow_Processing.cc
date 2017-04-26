@@ -20,12 +20,20 @@ Define_Module (Open_Flow_Processing);
 simsignal_t Open_Flow_Processing::droppedPktSignal = registerSignal("droppedPkt");
 
 Open_Flow_Processing::Open_Flow_Processing() {
+
 }
 
 Open_Flow_Processing::~Open_Flow_Processing() {
 }
 
-void Open_Flow_Processing::initialize() {
+void Open_Flow_Processing::finish()
+{
+
+}
+
+
+void Open_Flow_Processing::initialize() 
+{
 	cModule *ITModule = getParentModule()->getSubmodule("flow_Table");
 	flow_table = check_and_cast<Flow_Table *>(ITModule);
 	
@@ -50,11 +58,14 @@ void Open_Flow_Processing::initialize() {
 
 	droppedPkt = 0;
 	WATCH (droppedPkt);
+	
+    name = this->getFullPath().c_str();
 }
 
 // invoked by Spanning Tree module;
 // disable ports for broadcast packets
-void Open_Flow_Processing::disablePorts(vector<int> ports) {
+void Open_Flow_Processing::disablePorts(vector<int> ports) 
+{
 	EV << "disablePorts method at " << this->getParentModule()->getName() << endl;
 
 	for (unsigned int i = 0; i < ports.size(); i++) {
@@ -126,6 +137,7 @@ void Open_Flow_Processing::handleMessage(cMessage *msg) {
 void Open_Flow_Processing::processQueuedMsg(cMessage *data_msg) {
 	if (dynamic_cast<EthernetIIFrame *>(data_msg) != NULL) {
 		frameBeingReceived = (EthernetIIFrame *) data_msg;
+			
 		EV << "Broadcast?: " << frameBeingReceived->getDest().isBroadcast() << endl;
 		oxm_basic_match *match = new oxm_basic_match();
 
@@ -136,8 +148,7 @@ void Open_Flow_Processing::processQueuedMsg(cMessage *data_msg) {
 		match->OFB_ETH_TYPE = frameBeingReceived->getEtherType();
 		//extract ARP specific match fields if present
 		if (frameBeingReceived->getEtherType() == ETHERTYPE_ARP) {
-			ARPPacket *arpPacket = check_and_cast<ARPPacket *>(
-					frameBeingReceived->getEncapsulatedPacket());
+			ARPPacket *arpPacket = check_and_cast<ARPPacket *>(frameBeingReceived->getEncapsulatedPacket());
 			match->OFB_ARP_OP = arpPacket->getOpcode();
 			match->OFB_ARP_SHA = arpPacket->getSrcMACAddress();
 			match->OFB_ARP_THA = arpPacket->getDestMACAddress();
@@ -147,10 +158,10 @@ void Open_Flow_Processing::processQueuedMsg(cMessage *data_msg) {
 		//extract IP match fields if present
 		IPv4Datagram *ip_pkt;
 		ip_pkt = dynamic_cast<IPv4Datagram *>(frameBeingReceived->getEncapsulatedPacket());
-		if (ip_pkt != NULL) {
+		if (ip_pkt != NULL) {	    
 			match->OFB_IPV4_DST = ip_pkt->getDestAddress();
 			match->OFB_IPV4_SRC = ip_pkt->getSrcAddress();
-			match->OFB_IP_PROTO = ip_pkt->getTransportProtocol();
+		    match->OFB_IP_PROTO = ip_pkt->getTransportProtocol();
 			//TCP info
 			if (ip_pkt->getTransportProtocol() == 6) {
 				TCPSegment *tcp_packet;
@@ -174,10 +185,12 @@ void Open_Flow_Processing::processQueuedMsg(cMessage *data_msg) {
 
 		if (flow_table->lookup(match)) {
 			//lookup successful
-			EV << "Found entry in flow table." << endl;
+				
+			ip_pkt->setTimeToLive(ip_pkt->getTimeToLive() - 1);
 			ofp_action_output *action_output = flow_table->returnAction(match);
 			uint32_t outport = action_output->port;
 
+            
 			/*DROP THE PACKET BASED ON THE RETURNED ACTION*/
 			if (outport == UINT_MAX) {
 				droppedPkt++;
@@ -193,14 +206,16 @@ void Open_Flow_Processing::processQueuedMsg(cMessage *data_msg) {
 			    // delte the flow entry
 			    
 			    cGate *gate =getParentModule()->gate("ethg$o", outport);
-			    if (gate->isConnected()) 
+			    if (gate->isConnected()) {
+                           
 			        send(frameBeingReceived, "ifOut", outport);
+			    
+			    }
 			    else {
                     //drop the packet
 			        delete (data_msg);
 			        //send signal to OFA_switch to notify the controller
 			        if (!sent) {
-			            std::cout<<"[OF switch]gate not connected\n";
 			            OF_Wrapper *wrapper = new OF_Wrapper ();
 			            wrapper->outport = outport;
 			            emit(NF_PORT_STATUS, wrapper);
@@ -213,6 +228,7 @@ void Open_Flow_Processing::processQueuedMsg(cMessage *data_msg) {
 			// lookup fail; notification to Switch Application module
 			EV << "owner: " << frameBeingReceived->getOwner()->getFullName() << endl;
 			EV << "queue in buffer" << endl;
+			
 			drop(data_msg);
 			buffer->push(frameBeingReceived);
 			OF_Wrapper *dummy = new OF_Wrapper();
@@ -254,17 +270,23 @@ void Open_Flow_Processing::receiveSignal(cComponent *src, simsignal_t id, cObjec
 		uint32_t buffer_id = wrapper->buffer_id;
 		uint16_t outport = wrapper->outport;
 		EthernetIIFrame *frame;
+		
 		if (buffer_id == OFP_NO_BUFFER) {
 			frame = wrapper->frame;
 		} else {
 			frame = buffer->returnMessage(buffer_id);
+		}
+		if (frame->hasEncapsulatedPacket() != NULL) {
+		    IPv4Datagram *ip_pkt;
+		    ip_pkt = dynamic_cast<IPv4Datagram *>(frame->getEncapsulatedPacket());
+		    if (ip_pkt != NULL)
+		        ip_pkt->setTimeToLive(ip_pkt->getTimeToLive() - 1);
 		}
 		take(frame);
 		send(frame, "ifOut", outport);
 	}
 	else if (id == NF_PORT_STATUS) {
 	    sent = false;
-	    cout<<"ok!\n";
 	}
 	else {}
 }

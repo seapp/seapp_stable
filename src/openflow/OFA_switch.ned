@@ -29,6 +29,12 @@ simple OFA_switch
         double startTime @unit("s") = default(0s);
         bool sendCompletePacket = default(false);
 		double flow_timeout @unit("s");
+		
+		@signal[fullFlowTable](type=bool);
+        @statistic[fullFlowTable](title="FlowTable if full"; source=fullFlowTable; record=vector; interpolationmode=none);
+        
+        @signal[myRtt](type=simtime_t);
+        @statistic[myRtt](title="RTT for packet out direction"; source=myRtt; record = vector, stats; interpolation = none);
     gates:
         input tcpIn @labels(TCPCommand/up);
         output tcpOut @labels(TCPCommand/down);

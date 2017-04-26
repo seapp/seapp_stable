@@ -61,7 +61,6 @@ bool ConditionalAttack::matchPacketFilter(cMessage* packet) const
 {
     // check if the current layer contains all the informations
 	int packetLayer = getPacketLayer((cPacket*)packet);
-		
 	if (packetLayer > minimumInvolvedLayer) {
         return false;
     }
@@ -278,7 +277,9 @@ void ConditionalAttack::execute(cMessage** packet, vector<cMessage*> &generatedP
 				// delete the old value and update the variable table
 				variableName.assign(retrieve->getVariableName());
 
-				// A.S:dont delete the variable just update the value
+				// <A.S>
+				//dont delete the variable just update the value
+				
 				//delete variableTable[variableName];
 				
 				variableTable[variableName] = variable;

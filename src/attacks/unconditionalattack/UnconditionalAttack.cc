@@ -270,6 +270,12 @@ void UnconditionalAttack::execute(vector<cMessage*> &putMessages)
 				return; // never executed
 			}
 
+			// <A.S> followed <F.R>
+			// Fakeread not recognized by unconditional attacks			
+			// case action_t::FAKEREAD: {
+			//	opp_error("[void UnconditionalAttack::execute(vector<cMessage*> &)] can't recognize the Fakeread action, which is not supported by seapp");
+			//	return; // never executed
+			// }
 
 		}
  

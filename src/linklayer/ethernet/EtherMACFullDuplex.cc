@@ -44,6 +44,7 @@ void EtherMACFullDuplex::initialize(int stage)
 
         beginSendFrames();
     }
+
 }
 
 void EtherMACFullDuplex::initializeStatistics()
@@ -118,6 +119,7 @@ void EtherMACFullDuplex::startFrameTransmission()
 
     // send
     EV << "Starting transmission of " << frame << endl;
+    
     send(frame, physOutGate);
 
     scheduleAt(transmissionChannel->getTransmissionFinishTime(), endTxMsg);
@@ -186,13 +188,15 @@ void EtherMACFullDuplex::processFrameFromUpperLayer(EtherFrame *frame)
         // store frame and possibly begin transmitting
         EV << "Frame " << frame << " arrived from higher layers, enqueueing\n";
         txQueue.innerQueue->insertFrame(frame);
-
+        
         if (!curTxFrame && !txQueue.innerQueue->empty())
             curTxFrame = (EtherFrame*)txQueue.innerQueue->pop();
     }
 
-    if (transmitState == TX_IDLE_STATE)
+
+    if (transmitState == TX_IDLE_STATE) {
         startFrameTransmission();
+    }
 }
 
 void EtherMACFullDuplex::processMsgFromNetwork(EtherTraffic *msg)

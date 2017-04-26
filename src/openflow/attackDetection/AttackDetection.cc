@@ -81,7 +81,7 @@ std::map<IPv4Address, int> AttackDetection:: collectInfo(std::map<int, ofp_flow_
 	
 	//accumulate the IP counters
 	std::map<int, ofp_flow_stats *>::iterator it = stats.begin();
-	while (it!= stats.end()) {
+/*	while (it!= stats.end()) {
 		int datapath = it->first;
 		int size = it->second[0].size;
 		//condition1: Collect all IP traffic (regardless protocol)
@@ -104,7 +104,9 @@ std::map<IPv4Address, int> AttackDetection:: collectInfo(std::map<int, ofp_flow_
 			}
 		}
 		it++;
-	}
+	}*/
+	//twra me ta sxolia to evala
+	dataSet.clear();
 	return dataSet;
 } 
 

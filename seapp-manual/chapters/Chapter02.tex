@@ -1,0 +1,574 @@
+% !TEX root = ../seapp-manual.tex
+
+% Chapter 2 - Summary of ASL primitives
+
+\chapter{Summary of ADL primitives}
+\label{ch:asl-primitives}
+
+\section{Actions}
+The set of the available actions is shown below.
+
+\paragraph{destroy}
+The \emph{destroy} action is a node action used to destroy a node. The node discards all the packets and it is present in the simulation field.
+%
+\begin{lstlisting}[language={asl}, caption={ASL destroy example}]
+#primitive: destroy(nodeId, t)
+destroy(5, 200)
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml}, caption={Interpreter output}]
+<configuration>
+  <Physical>
+    <Attack>
+      <start_time>200</start_time>
+      <node>5<node>
+      <action>
+        <name>Destroy</name>
+      </action>
+    </Attack>
+  </Physical>
+</configuration>
+\end{lstlisting}
+
+\paragraph{disable}
+The \emph{disable} action is a node action used to remove the node from the simulation field.
+%
+\begin{lstlisting}[language={asl}, caption={ASL disable example}]
+#primitive: disable(nodeId, t)
+disable(5, 200)
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml}, caption={Interpreter output}]
+<configuration>
+  <Physical>
+    <Attack>
+      <start_time>200</start_time>
+      <node>5<node>
+      <action>
+        <name>Disable</name>
+      </action>
+    </Attack>
+  </Physical>
+</configuration>
+\end{lstlisting}
+
+In case of \textbf{disable} primitive it is necessary to import and declare the submodule \textbf{'ExMachina'} in the .ned file. The module does not need to be connected, but its presence is necessary as it is responsible to handle this action.
+
+\paragraph{move}
+The \emph{move} action is a node action used to move a node.
+%
+\begin{lstlisting}[language={asl},caption={ASL move example}]
+#primitive: move(nodeId, t, x, y, z)
+move(5, 100, 10, 10, 0)
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Physical>
+    <Attack>
+      <start_time>100</start_time>
+      <node>5<node>
+      <action>
+        <name>Move</name>
+        <parameters>10:10:0</parameters>
+      </action>
+    </Attack>
+  </Physical>
+</configuration>
+\end{lstlisting}
+
+\paragraph{retrieve}
+The \emph{retrieve} action is a packet action used to retrieve the content of a field of a target packet and to store it into a variable.
+%
+\begin{lstlisting}[language={asl},caption={ASL retrieve example}]
+#primitive: retrieve(packetName, fieldName, variableName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+ filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    var destPort
+    retrieve(original, "UDP.sourcePort", destPort)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <var>
+        <name>destPort</name>
+        <value></value>
+        <type>NONE</type>
+      </var>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Retrieve</name>
+        <parameters>packetName:original:field_name:UDP.sourcePort:varName:destPort</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+%
+In the ACF the conditional operators are stored in \emph{reverse order} to that of the operands.
+
+\paragraph{drop}
+The \emph{drop} action is a packet action used to discard a target packet.
+%
+\begin{lstlisting}[language={asl},caption={ASL drop example}]
+#primitive: drop(packetName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    drop(original)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Drop</name>
+        <parameters>packetName:original</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+\paragraph{clone}
+The \emph{clone} action is a packet action used to create a packet that is a clone of a target packet.
+%
+\begin{lstlisting}[language={asl},caption={ASL clone example}]
+#primitive: clone(packetName, clonedPacketName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet dolly
+    clone(original, dolly)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Clone</name>          
+        <parameters>packetName:original:newPacketName:dolly</parameters>                        
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+%
+The interpreter handles the variables and the packets in two different ways. 
+In the ADL file, the user has to declare both the variables and the packets but in the ACF the declared packets do not appear, unlike the declared variables.
+
+\paragraph{create}
+The \emph{create} action is a packet action used to create a packet 'ex-novo'.
+%
+\begin{lstlisting}[language={asl},caption={ASL create example}]
+#primitive: create(packetName, layer5.type, value5, layer4.type, value4, layer3.type, value3, layer2.type, value2)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet exNovo
+    create(exNovo, "APP.type", "0000")
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Create</name>
+        <parameters>packetName:exNovo:APP.type:0000</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+The default sizes of packets created by the \emph{create} action are listed in table ~\ref{tab:packetSize-table}. The sizes can be changed by using the \emph{change} action.
+
+%
+\begin{table}[ppp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Packet Type}&\textbf{Packet Size}&\\
+\midrule
+Application		& 1 byte	\\
+TCP				& 20 bytes \\
+UDP 				& 8 bytes \\
+IP				& 20 bytes \\
+PPPFrame 		& 7 bytes \\
+EthernetFrame 	& 18 bytes \\
+\bottomrule
+\end{tabular}
+\caption{Default Packet Size}
+\label{tab:packetSize-table}
+\end{table}
+
+\paragraph{change}
+The \emph{change} action is a packet action used to change the content of a field of a target packet. 
+%
+\begin{lstlisting} [language={asl},caption={ASL change example}]
+#primitive: change(packetName, fieldName, variableName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    change(original, "UDP.destinationPort", 5000)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <var>
+        <name>5000</name>
+        <value>5000</value>
+        <type>NUMBER</type>
+      </var>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Change</name>
+        <parameters>packetName:original:field_name:UDP.destinationPort:value:5000</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+%
+In the ASL file, even if the user uses variables which has not been explicitly declared, the interpreter automatically declares and initializes the variables (if it is necessary).
+
+SEA++ supports the assignement of random values to the fields. The keywords \textbf{"RANDOM\_IP"}, \textbf{"RANDOM\_MAC"}, \textbf{"RANDOM\_INT"}, \textbf{"RANDOM\_SHORT"} are used to generate random values of the specific \emph{RANDOM\_x} type. More details can be found in \ref{sec:random} .
+
+As mentioned above, when a packet is created a default packet size is assigned to it. The size can be changed by using the keyword \textbf{\emph{controlInfo.packetSize}}.
+
+Finally, SEA++ supports the encapsulation of packets using the \emph{change} action. The feature allows the building of complete fake packets including all the layers of the OSI stack. An example of the feauture is:
+%
+\begin{lstlisting} [language={asl},caption={ASL change example: Packet Encapsulation}]
+#primitive: change(packetName, fieldName, variableName)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+    packet traPacket
+    packet appPacket
+
+    #create a new APP-layer packet
+    create(appPacket, "APP.type", "1001")
+    
+    change(appPacket, "APP.info", 1)
+    change(appPacket, "APP.name", "myPacket")
+    
+    change(appPacket, "controlInfo.packetSize", 1250)
+
+    #create a new TRA-layer packet
+    create(traPacket, "TRA.type", "0000") 
+    change(traPacket, "TRA.destinationPort", 123)
+    
+    ############ SET THE PAYLOAD ############
+    change(traPacket, "TRA.payload", appPacket) 
+}
+\end{lstlisting}
+
+Using the keywork \textbf{payload} ("\emph{layer\_name\textbf{.payload}}"), we can define the packet which will be encapsulated as payload in the current packet.
+
+\paragraph{send}
+Given a packet, cloned or created (and correctly fillled), which belongs to the layer $L$, the \emph{send} action is used to send the packet to the bottom layer.
+%
+\begin{lstlisting}[language={asl},caption={ASL send example}]
+#primitive: send(packetName, forwardingDelay)
+list targetList = {1,2,5}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet dolly
+    clone(original, dolly)
+    send(dolly, 0)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Clone</name>          
+        <parameters>packetName:original:newPacketName:dolly</parameters>                        
+      </action>
+      <action>
+        <name>Send</name>
+        <parameters>packetName:dolly:delay:0</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+\paragraph{put}
+The \emph{put} action is usefull to transmit packets from a node to a set of recipient nodes bypassing the communication channel.
+%
+\begin{lstlisting}[language={asl},caption={ASL put example}]
+#primitive: put(packetName, recipientNodes, direction, updateStats, forwardingDelay)
+list targetList = {1,2,5}
+list dstList = {6}
+from 200 nodes in targetList do {
+  filter("UDP.sourcePort" == "1000" or "UDP.sourcePort" == "1025" and "UDP.destinationPort" == "2000")
+    packet dolly
+    clone(original, dolly)
+    put(dolly, dstList, TX, FALSE, 0)
+}
+\end{lstlisting}
+%
+\begin{lstlisting}[language={xml},caption={Interpreter output}]
+<configuration>
+  <Conditional>
+    <Attack>
+      <start_time>200</start_time>
+      <node>1:2:5</node>
+      <filter>UDP.sourcePort:==:1000:UDP.sourcePort:==:1025:UDP.destinationPort:==:2000:AND:OR</filter>
+      <action>
+        <name>Clone</name>          
+        <parameters>packetName:original:newPacketName:dolly</parameters>                        
+      </action>
+      <action>
+        <name>Put</name>
+        <parameters>packetName:dolly:nodes:6:direction:TX:throughWC:false:delay:0</parameters>
+      </action>
+    </Attack>
+  </Conditional>
+</configuration>
+\end{lstlisting}
+
+
+
+\section{Variables and expressions}
+
+\subsection{Variables}
+The ADL handles variables which can store both numbers and strings. The user must declare the variable before using it. The syntax to declare a variable is:
+%
+\begin{lstlisting}[language={asl}, caption={Syntax to declare a variable}]
+var foo
+\end{lstlisting}
+%
+The AS introduces the type transparency than the user has not to declare the type of the content of the variable, e.g. integer, or double, or string. 
+
+\paragraph{Expressions}
+The ADL handles expressions that make possible both operations and assignments. In the table~\ref{tab:expression-table-appendix} is shown the ADL expression table.
+%
+\begin{table}
+\centering
+\subfloat[Assignment operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$=$			& supported		& supported		\\
+$+=$			& supported		& not supported	\\
+$-=$			& supported		& not supported	\\
+$\times =$		& supported		& not supported	\\
+$/=$			& supported		& not supported	\\
+$\div =$		& supported		& not supported	\\
+\bottomrule
+\end{tabular}
+}\\
+\subfloat[Arithmetic operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$+$		& supported		& supported		\\
+$-$		& supported		& not supported	\\
+$\times$	& supported		& not supported	\\
+$/$		& supported		& not supported	\\
+$\div$	& supported		& not supported	\\
+\bottomrule
+\end{tabular}
+}\\
+\subfloat[Comparison operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$<$		& supported		& supported	\\
+$>$		& supported		& supported	\\
+$<=$		& supported		& supported	\\
+$>=$		& supported		& supported	\\
+$==$		& supported		& supported	\\
+$!=$		& supported		& supported	\\
+\bottomrule
+\end{tabular}
+}\\
+\subfloat[Logical operators]{
+\begin{tabular}{ccc}
+\toprule
+\textbf{operator}&\textbf{numbers}&\textbf{strings}\\
+\midrule
+$AND$	& supported		& supported	\\
+$OR$	& supported		& supported	\\
+\bottomrule
+\end{tabular}
+}
+\caption{ADL expression table}
+\label{tab:expression-table-appendix}
+\end{table}
+
+An example of ADL expression is:
+%
+\begin{lstlisting}[language={asl}, caption={Syntax expression example}]
+var result
+var operand1 =  2
+var operand2 =  7
+result = operand1 +  operand2
+\end{lstlisting}
+%
+As specified above, the ADL introduces the type transparency and a variable can store both numbers and strings. This feature makes possible to initialize a variable with a number and after assign a string to it:
+%
+\begin{lstlisting}[language={asl}, caption={Legal expressions}]
+var result
+var operand1 =  2
+var operand2 =  7
+result = operand1 +  operand2
+result = "Hello, world!"		# legal expression
+\end{lstlisting}
+%
+However the user has got the responsibility to ensure the consinstency of the expressions:
+%
+\begin{lstlisting}[language={asl}, caption={Illegal expressions}]
+var result
+var operand1 =  2
+var operand2 =  7
+result = operand1 +  operand2
+result = "Hello"			# legal expression
+result += ", world!"			# legal expression
+var operand3 =  5
+resutl += operand3			# illegal expression
+\end{lstlisting}
+
+\section{Random Values}
+\label{sec:random}
+The \emph{change} action is a packet action used to change the content of a field of a target packet. SEA++ supports the assignement of random values to the fields. The random generator is based on the C++11 libraries which guarantee uniformly distributed non-deterministic random numbers within a predefined range. The below keywords are used to generate random values of the specific RANDOM\_x type:
+%
+\begin{description}
+\item {\makebox[6cm]{\texttt{\textbf{RANDOM\_IP}}} Random IPv4 Addresses}
+\item {\makebox[6cm]{\texttt{\textbf{RANDOM\_MAC}}} Random Ethernet MAC Addresses}
+\item {\makebox[6cm]{\texttt{\textbf{RANDOM\_INT}}} Random positive integer numbers}
+\item {\makebox[6cm]{\texttt{\textbf{RANDOM\_SHORT}}} Random positive short numbers}
+\end{description}
+%
+ A \emph{RANDOM\_INT} number will be a positive number within the range of 0 and the maximum integer supported and a \emph{RANDOM\_SHORT} value will be ranging among 0 and the maximun value for a variable of type short. 
+
+While the usage of "\emph{RANDOM\_INT}" and "\emph{RANDOM\_SHORT}" keywords is straightforward, there are some guidelines to help for the rest two keywords. 
+
+\subsection{Assign random MAC addresses}
+The current implementation of SEA++ supports the assignment of random Ethernet MAC addresses. The change is based on the control information objects which are attached on packets while they are traversing the communication stack of a node. To this end, the interception of the packet is done between the network and mac layer of the stack. Below is an example of a conditional attack using the ADL and changing the source MAC address of the packet:
+\begin{lstlisting}[language={asl}, caption={Assign random MAC source address}]
+list dstList = {2} 
+from 21 nodes in dstList do {
+	filter ("NET.destAddress" == "192.168.2.6" and "attackInfo.fromGlobalFilter" == 1)
+		change(original, "controlInfo.src", RANDOM_MAC)
+}
+\end{lstlisting}
+
+The compromised node 2 intercepts all the packets which are destined to host with IP address "192.168.2.6", but it changes the MAC source address only to packets which have been generated by the global filter. The keyword \textbf{attackInfo.fromGlobalFilter} is used to distiguish the genuine packets from packets which have been generated by the Global Filter through unconditional attacks.
+
+\subsection{Assign random IP addresses}
+The change of the IP address field can be performed in two different ways. One is based on the control information object that OMNeT++ provides and the second one is based on the packet header. The choice depends on the user's need and the attack's description.
+
+\subsubsection{Using the Control Object}
+In this case, the packet is intercepted between the transport and the network layer. The user has to be aware of the current topology and its specifications, mainly the interface table, because the correct interface id has to be defined during the description of the action. In this way, one compromised host can be used to generate and inject packets in the network with different IP source addresses using the same interface. An example of this case is shown below:
+\begin{lstlisting}[language={asl}, caption={Assign random IP source address on control object}]
+list dstList = {2}
+
+from 20 every 0.4 do {
+
+	# declare a packet
+	packet fakePacket
+    
+	# create a new application packet
+	create(fakePacket, "APP.type", "1001") 
+
+	# fill the new packet properly
+	
+	change(fakePacket, "APP.info", RANDOM_INT)
+	change(fakePacket, "APP.name", "myPacket")
+	
+	change(fakePacket, "controlInfo.destAddr", "192.168.2.6")
+	change(fakePacket, "controlInfo.destPort", 123)
+	change(fakePacket, "controlInfo.sockId", 0)
+	change(fakePacket, "controlInfo.interfaceId", 101)
+
+	
+	change(fakePacket, "sending.outputGate", "app_udp_inf$o[0]")
+	
+	put(fakePacket, dstList, TX, FALSE, 0)
+} 
+
+from 21 nodes in dstList do {
+	filter ("TRA.destinationPort" == "123" and "attackInfo.fromGlobalFilter" == 1)
+		change(original, "controlInfo.srcAddr", RANDOM_IP)
+}
+\end{lstlisting}
+
+In the example, the user defines the generation of application packets which will be forwarded to the destination "192.168.2.6" on port "123". The interface used to forward the packets has the id number "101". This is not an arbitrary number but the actuall interface id used by the simulation. The generated by the simulator packets will be injected in the reception buffer of the compromised host 2. The compromised host starts intercepting the packets between the transport and the network layer (conditional attack) and changes the IP source address of the packet to a random value.
+
+If a different implementation than the one provided by INET 2.6 of Routing or Interface table is used, this change will not be supported.
+
+HINT: OMNeT++ counts the interface ids starting from number 100. Higher priority is given to loopbacks, then the rest of the interfaces follow. In this example, we consider a host with one loopback and one Ethernet interface.
+
+\subsubsection{Using the packet header}
+An alternative way to change the IP source field of a packet is based on the direct manipulation of the packet header. In this case, the interception of the packet is performed between the network and mac layer of the communication stack. This change action can also be combined with the assignment of a random MAC source address of the packet. 
+
+\begin{lstlisting}[language={asl}, caption={Assign random IP source address on packet header}]
+list dstList = {2}
+
+from 20 every 0.4 do {
+
+	# declare a packet
+	packet fakePacket
+    
+	# create a new application packet
+	create(fakePacket, "APP.type", "1001") 
+
+	# fill the new packet properly
+	
+	change(fakePacket, "APP.info", RANDOM_INT)
+	change(fakePacket, "APP.name", "myPacket")
+	
+	change(fakePacket, "controlInfo.destAddr", "192.168.2.6")
+	change(fakePacket, "controlInfo.sockId", 0)
+	change(fakePacket, "controlInfo.interfaceId", 1)
+	change(fakePacket, "controlInfo.destPort", 123)
+	
+	change(fakePacket, "sending.outputGate", "app_udp_inf$o[0]")
+	
+	put(fakePacket, dstList, TX, FALSE, 0)
+} 
+
+from 21 nodes in dstList do {
+	filter ("NET.destAddress" == "192.168.2.6" and "attackInfo.fromGlobalFilter" == 1)
+		change(original, "NET.srcAddress", RANDOM_IP)
+		change(original, "controlInfo.src", RANDOM_MAC)
+}
+\end{lstlisting}
+
+The generated IP values are based on the network mask and the network address the user defines in the \texttt{.ini} file. The feature has been tested by using only the \emph{'FlatNetworkConfigurator'} module. In case of \emph{'IPv4NetworkConfigurator'}, arbitrary values will be generated.

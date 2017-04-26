@@ -362,7 +362,7 @@ enum ofp_port_no {
 class ofp_action_output: public ofp_action_header {
 public:
 //    uint16_t len; /* Length is 16. */
-    uint32_t port; /* Output port. */
+      uint32_t port; /* Output port. */
 //    uint16_t max_len; /* Max length to send to controller. */
 //    uint8_t pad[6]; /* Pad to 64 bits. */
 //protected:
@@ -371,16 +371,15 @@ public:
 
 /* Flow setup and teardown (controller -> datapath). */
 
+
 enum ofp_flow_mod_command {
-    OFPFC_ADD = 0, /* New flow. */
-    OFPFC_MODIFY = 1, /* Modify all matching flows. */
-    OFPFC_MODIFY_STRICT = 2, /* Modify entry strictly matching wildcards and
-     priority. */
-    OFPFC_DELETE = 3, /* Delete all matching flows. */
-    OFPFC_DELETE_STRICT = 4,
-/* Delete entry strictly matching wildcards and
- priority. */
+    OFPFC_ADD = 0, //New flow. 
+    OFPFC_MODIFY = 1, //Modify all matching flows. 
+    OFPFC_MODIFY_STRICT = 2, // Modify entry strictly matching wildcards and priority. 
+    OFPFC_DELETE = 3, // Delete all matching flows. 
+    OFPFC_DELETE_STRICT = 4, // Delete entry strictly matching wildcards and priority. 
 };
+
 
 /* Description of a physical port */
 struct ofp_phy_port {
@@ -411,7 +410,39 @@ enum ofp_port_reason {
     OFPPR_MODIFY            /* Some attribute of the port has changed. */
 };
 
+/************************ ERROR STRUCTS *******************/
+
+/* OFPT_ERROR: Error message (datapath -> controller). */
+struct ofp_error_msg {
+    struct ofp_header header;
+    uint16_t type;
+    uint16_t code;
+    uint8_t data[64]; //Variable-length data.  Interpreted based on the type and code. 
+                    // OFPET_FLOW_MOD_FAILED: The data field contains at least 64 bytes of the failed request.
+};
 
 
+/* Values for ’type’ in ofp_error_message.  These values are immutable: they
+* will not change in future versions of the protocol (although new values may
+* be added). */
+enum ofp_error_type {
+    //OFPET_HELLO_FAILED,         /* Hello protocol failed. */
+    //OFPET_BAD_REQUEST,          /* Request was not understood. */
+    //OFPET_BAD_ACTION,           /* Error in action description. */
+    OFPET_FLOW_MOD_FAILED         /* Problem modifying flow entry. */
+    //OFPET_PORT_MOD_FAILED,      /* Port mod request failed. */
+    //OFPET_QUEUE_OP_FAILED       /* Queue operation failed. */
+};
+
+/* ofp_error_msg ’code’ values for OFPET_FLOW_MOD_FAILED.  ’data’ contains
+* at least the first 64 bytes of the failed request. */
+enum ofp_flow_mod_failed_code {
+    OFPFMFC_ALL_TABLES_FULL    /* Flow not added because of full tables. */
+    //OFPFMFC_OVERLAP,            /* Attempted to add overlapping flow with CHECK_OVERLAP flag set. */
+    //OFPFMFC_EPERM,              /* Permissions error. */
+    //OFPFMFC_BAD_EMERG_TIMEOUT,  /* Flow not added because of non-zero idle/hard timeout. */
+    //OFPFMFC_BAD_COMMAND,        /* Unknown command. */
+    //OFPFMFC_UNSUPPORTED         /* Unsupported action list - cannot process in the order specified. */
+};
 
 #endif /* OPENFLOW_H_ */

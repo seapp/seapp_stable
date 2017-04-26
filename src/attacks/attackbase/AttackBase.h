@@ -43,6 +43,7 @@ class NetworkParameters {
         string getNetmask() { return netmask; }
 };
 
+
 class AttackBase {
 
 	private:
@@ -55,7 +56,7 @@ class AttackBase {
 		// table of variables
 		map<string, Variable*> variableTable;
         // stack for operations
-		stack<Variable> variableStack;
+		stack<Variable*> variableStack;
 		
 		// <A.S>
 		NetworkParameters networkParameters;
@@ -90,7 +91,5 @@ class AttackBase {
  */
 string to_string(const attack_t type);
 attack_t to_attack_type(const string type); 
-
-
 
 #endif

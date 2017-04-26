@@ -5,6 +5,7 @@
  
  
 #include "seapputils.h"
+#include "TCPSegment.h"
 #include <sstream>
 #include <map>
 #include <random>
@@ -75,7 +76,11 @@ int getPacketLayer(cPacket* packet)
 	}
 	
 	// <A.S>
-	if (packetClassName == "MeasurementData") {
+	if (packetClassName == "MonitoringData") {
+	    return 5;
+	}
+	
+	if (packetClassName == "SetPoints") {
 	    return 5;
 	}
 	
@@ -124,6 +129,8 @@ int getPacketLayer(cPacket* packet)
 	if (packetClassName == "EthernetIIFrame") {
 		return 2;
 	}
+	
+	cout<<"packetClass name = " << packetClassName << endl;
 	
     opp_error("[int getPacketLayer(cPacket*)] Error, packetClassName not recognized");
 	
@@ -306,53 +313,84 @@ cPacket* hardCopy (cPacket* packetToCopy)
 }
 
 // <A.S>
-bool isControlInfo(const string layer) {
+bool isControlInfo(const string layer) 
+{
 	if ((layer == "attackInfo") || (layer == "controlInfo")) 
 		return true;
 	return false;
 } 
 
 // <A.S>
-bool hasPayload(cMessage* msg) {
+bool hasPayload(cMessage* msg) 
+{
 	bool isPacket = msg->isPacket();
-	if (isPacket) { 
-		cPacket *packet = dynamic_cast<cPacket*>(msg);
-		cPacket* encapsulatedPacket = packet->getEncapsulatedMsg();
-		if (encapsulatedPacket != nullptr) 
-			return true;
-		return false;
+	if (isPacket) {
+	    string className = msg->getClassName();
+	    //TCP Segments do not encapsulate the app data as payload
+	    if (className.find("TCPSegment") != string::npos) { 
+            if ((check_and_cast<TCPSegment*>(msg))->getPayloadArraySize() > 0 )
+                return true;
+        }
+	    else {
+		    cPacket *packet = dynamic_cast<cPacket*>(msg);
+		    cPacket* encapsulatedPacket = packet->getEncapsulatedPacket();
+		    if (encapsulatedPacket != nullptr) 
+			    return true;
+		    return false;
+		}
 	}
 	return false;
 }
 
 // <A.S>
-bool getParamFromEncapsulatedPacket(cMessage* msg, const string parameterName) {
+bool getParamFromEncapsulatedPacket(cMessage* msg, const string parameterName) 
+{
 	bool isPacket = msg->isPacket();
-	if (isPacket) { 
-		cPacket *packet = dynamic_cast<cPacket*>(msg);
-		cPacket* encapsulatedPacket = packet->getEncapsulatedMsg();
-		if (encapsulatedPacket != nullptr) {
-			if (encapsulatedPacket->hasPar(parameterName.c_str())) 
-				return encapsulatedPacket->par(parameterName.c_str()).boolValue();
+	if (isPacket) {
+	    string className = msg->getClassName();
+	    //TCP Segments do not encapsulate app data as payload. They are added in a list.
+	    //If the payload list includes at least one app data injected by the GF, the segment is marked as "bad"
+	    if (className.find("TCPSegment") != string::npos) { 
+            TCPSegment *packet = dynamic_cast<TCPSegment*>(msg);
+            for (int i=0; i<packet->getPayloadArraySize(); i++) {
+                TCPPayloadMessage payload = packet->getPayload(i);
+                if ((payload.msg->hasPar(parameterName.c_str())) && (payload.msg->par(parameterName.c_str()).boolValue())) {
+                    return payload.msg->par(parameterName.c_str()).boolValue();
+                }
+            }
+            return false;
+        }
+        else { 
+		    cPacket *packet = dynamic_cast<cPacket*>(msg);
+		    cPacket* encapsulatedPacket = packet->getEncapsulatedPacket();
+		    if (encapsulatedPacket != nullptr) {
+			    if (encapsulatedPacket->hasPar(parameterName.c_str())) 
+			    	return encapsulatedPacket->par(parameterName.c_str()).boolValue();
+		    }
+		    else {
+                string errorMsg;
+			    errorMsg.append("[bool getParamFromEncapsulatedPacket(cMessage* msg, sting parameterName)] Error, there is no '");
+			    errorMsg.append("' encapsulated packet");
+                opp_error(errorMsg.c_str());
+		    }
 		}
-		else {
-			string errorMsg;
-			errorMsg.append("[bool getParamFromEncapsulatedPacket(cMessage* msg, sting parameterName)] Error, there is no '");
-			errorMsg.append("' encapsulated packet");
-            opp_error(errorMsg.c_str());	
-		}
+		
+	
+		
 	}	
 }
 
 // <A.S>
-bool isRandomValue(string value) {
+bool isRandomValue(string value) 
+{
     if (value.find("RANDOM") != string::npos)
         return true;
     return false;
 }
 
 // <A.S>
-int generateRandomIntValue(int a, int b) {
+int generateRandomIntValue(int a, int b) 
+{
     random_device rand_dev; //uniformly-distributed integer random number generator that produces non-deterministic random numbers
 	mt19937 generator(rand_dev()); //random number engine based on Mersenne Twister algorithm. It satisfies the UniformRandomBitGenerator.
 								   //It produces high quality unsigned integer random numbers of type UIntType on the interval [0, 2w-1]
@@ -361,7 +399,17 @@ int generateRandomIntValue(int a, int b) {
 }
 
 // <A.S>
-string generateRandomValue(string networkAddress, string netmask) {
+double generateRandomDblValue(double a) 
+{
+    random_device rand_dev; //uniformly-distributed integer random number generator that produces non-deterministic random numbers
+	mt19937 generator(rand_dev()); //random number engine based on Mersenne Twister algorithm. It satisfies the UniformRandomBitGenerator.
+								   //It produces high quality unsigned integer random numbers of type UIntType on the interval [0, 2w-1]
+	uniform_real_distribution<double> distr(1, a-2);
+    return distr(generator);
+}
+// <A.S>
+string generateRandomValue(string networkAddress, string netmask) 
+{
     std::vector<string> netAddrTokens = tokenize(networkAddress, '.');
     std::vector<string> netmaskTokens = tokenize(netmask, '.');
     
@@ -382,7 +430,8 @@ string generateRandomValue(string networkAddress, string netmask) {
 
 
 // <A.S>
-string generateRandomValue(const char *fieldType) {
+string generateRandomValue(const char *fieldType) 
+{
 	string field (fieldType);
 	
 	random_device rand_dev; //uniformly-distributed integer random number generator that produces non-deterministic random numbers
@@ -406,7 +455,7 @@ string generateRandomValue(const char *fieldType) {
 		return randomNumber;
 	}
 	else if (strcasecmp(fieldType, "short") == 0) {
-		uniform_int_distribution<short> distr(0, SHRT_MAX-1);
+		uniform_int_distribution<short> distr(0, INT_MAX-1);
 		string randomNumber = to_string(distr(generator));
 		return randomNumber;
 	}

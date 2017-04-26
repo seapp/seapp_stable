@@ -36,6 +36,7 @@ void Mitigation::mitigate(IPv4Address victim, IPv4Address source, int inport) {
 	match->OFB_IN_PORT = inport;
 	wrapper->match = match;
 	EV_INFO << "[Mitigation]: Mitigation has been enabled at " << simTime() << " for dstIP: " << victim << " and srcIP: " << source << endl;
+	cout << "[Mitigation]: Mitigation has been enabled at " << simTime() << " for dstIP: " << victim << " and srcIP: " << source << endl;
 	emit(mitigationSignal, wrapper);
 }
 

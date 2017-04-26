@@ -1,0 +1,3 @@
+The initial code and implementation of OpenFlow module as extension of INET/OMNeT++ can be found at 
+https://github.com/lsinfo3/ofomnet.
+All the additional extensions are noted with the name of the author.

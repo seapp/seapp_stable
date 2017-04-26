@@ -97,6 +97,9 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     int numDropped;  // forwarding off, no outgoing interface, too large but "don't fragment" is set, TTL exceeded, etc
     int numUnroutable;
     int numForwarded;
+    
+    // <A.S>
+    static simsignal_t hopsSignal;
 
     // hooks
     typedef std::multimap<int, IHook*> HookList;

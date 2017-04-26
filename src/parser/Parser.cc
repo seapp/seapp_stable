@@ -182,7 +182,7 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 	variableTable["SELF"] = new Variable(to_string(node->getId()), variable_t::NUMBER);
 	variableTable["MIN"] = new Variable("100", variable_t::NUMBER);
 	variableTable["MAX"] = new Variable("0", variable_t::NUMBER);
-	 
+	variableTable["RESULT"] = new Variable("0", variable_t::NUMBER); // <A.S> entry to store the result of any expression
 	// check if the calling node is the global filter
 	string className = node->getClassName();
 	if (className == "GlobalFilter"){
@@ -299,7 +299,7 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 				EV_INFO << msg << endl;
 				
 				// add theretrieved variable in the varTable
-				variableTable[variableName] = new Variable(variableValue, variableType);
+				variableTable[variableName] = new Variable (variableValue, variableType);
 				break;
 			}
 			
@@ -618,7 +618,7 @@ bool Parser::initializeAttack (const xmlpp::Node* nodeLevel2, AttackBase* attack
 	
 	} // end for to retrieve attack detail
 
-	attack -> initializeVariableTable(variableTable);
+	attack->initializeVariableTable(variableTable);
 	
 	if( isInvolved || isGlobalFilter ) {
 		occurrenceTime = atol( startTime.c_str() );

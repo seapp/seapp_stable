@@ -23,6 +23,6 @@ simple Flow_Table
 {
     parameters:
         @display("i=block/table2");
-
+        int size = default (2000);
 
 }

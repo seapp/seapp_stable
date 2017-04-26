@@ -21,7 +21,7 @@ import inet.nodes.inet.StandardHost;
 import inet.networklayer.autorouting.ipv4.FlatNetworkConfigurator;
 import inet.util.ThruputMeteringChannel;
 
-import inet.openflow.nodes.*;
+import inet.ofomnet.openflow.nodes.*;
 
 
 network Scenario_Small

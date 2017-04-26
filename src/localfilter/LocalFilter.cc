@@ -133,10 +133,22 @@ void LocalFilter::initializeAttacks()
 	
 	cMessage* selfMessage;
 
+	//OLD
+	// schedule self messages according to the occurrence time and attach to it the physical attacks
+	//if( physicalAttacks.size() > 0 ){
+	//	for(size_t i=0; i<physicalAttacks.size(); i++){
+	//		selfMessage = new cMessage("Fire physical attack", (short) attack_t::PHYSICAL);
+	//		selfMessage->addPar("attack");
+	//		selfMessage->par("attack").setPointerValue(physicalAttacks[i]->getAttack());
+	//		scheduleAt(physicalAttacks[i]->getOccurrenceTime(), selfMessage);
+	//	}
+	//}
+
+	// NEW
 	// schedule self messages according to the occurrence time and attach to it the physical attacks, 
 	// except disable attack
 	if (physicalAttacks.size() > 0) {
-		for(size_t i=0; i<physicalAttacks.size(); i++){
+		for(size_t i=0; i<physicalAttacks.size(); i++) {
             // get the attack
             AttackBase* attack = physicalAttacks[i]->getAttack();
             
@@ -181,7 +193,7 @@ void LocalFilter::initializeAttacks()
 	}
 	
 	// schedule self messages according to the occurrence time and attach to it the conditional attacks
-	if( conditionalAttacks.size() > 0 ){	
+	if( conditionalAttacks.size() > 0 ) {	
 		for(size_t i = 0; i < conditionalAttacks.size(); i++){
 			selfMessage = new cMessage("Fire conditional attack", (short) attack_t::CONDITIONAL);	
 			selfMessage->addPar("attack");
@@ -217,7 +229,7 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 			bool isFromGlobalFilter = (arrivalGateName.find("global") != std::string::npos);
 			
             // check if msg came from globalfilter
-            if (isFromGlobalFilter) {			
+            if (isFromGlobalFilter) {
 				return command_t::GLOBALFILTER;
 			}
             
@@ -226,7 +238,6 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 				// conditional attacks are directed only toward packets
 				bool isPacket = msg->isPacket();
 				if (isPacket) {
-				    // <A.S>
 					bool isDescendingPacket = (arrivalGateName.find("sup$i") != std::string::npos);
 
 					// add the necessary parameters to execute conditional attacks
@@ -236,6 +247,7 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 					if (isFromApp && !hasParameter) {
 						msg->addPar("isApplicationPacket");
 						msg->par("isApplicationPacket").setBoolValue(true);
+					        
 					}
 					
 					// add isFiltered parameter
@@ -256,17 +268,17 @@ LocalFilter::command_t LocalFilter::planOperation(cMessage* msg) const
 					// Add fromGlobalFilter parameter
 					// param is attached only to the outgoing packets
 					hasParameter = msg->hasPar("fromGlobalFilter");
-					if (isPacket && !hasParameter) {
+					if (!hasParameter) {
 						if(isDescendingPacket) {
 							msg->addPar("fromGlobalFilter");
 							// if the packet is new then add parameter and init it to false						
 							if (!hasPayload(msg)) {
-								msg->par("fromGlobalFilter").setBoolValue(false);
+								msg->par("fromGlobalFilter").setBoolValue(false);   
 							}
-							// else copy the value of the param of the encapsulated packet to persist consistency	
+						    //else copy the value of the param of the encapsulated packet to persist consistency	
 							else {
 								bool value = getParamFromEncapsulatedPacket(msg, "fromGlobalFilter");
-								msg->par("fromGlobalFilter").setBoolValue(value);
+								msg->par("fromGlobalFilter").setBoolValue(value);	
 							}
 						}
 					}
@@ -307,6 +319,15 @@ void LocalFilter::forgeInterfaceTable()
 	int maxEthIndex = 0;
 	int numberOfEthInterfaces = 0;
 	int numberOfInterfaces = interfaceTable->getNumInterfaces();
+	
+	// print the original interface table
+	//for (int i = 0; i < numberOfInterfaces; i++) {  
+	//	info.clear();
+	//	interfaceEntry = interfaceTable->getInterface(i);
+	//	info.append(interfaceEntry->detailedInfo());
+	//	EV <<"******************** before forgeInterfaceTable() ********************" << endl;
+	//	EV << info << endl;
+	//}
 
 	// couple network-layer gate index having NIC
 	for (int i = 0; i < numberOfInterfaces; i++){
@@ -344,6 +365,14 @@ void LocalFilter::forgeInterfaceTable()
 	
 	}
 
+	// print the forged interface table	
+	//for (int i =0; i < numberOfInterfaces; i++) {
+	//	info.clear();
+	//	interfaceEntry = interfaceTable->getInterface(i);
+	//	info.append(interfaceEntry->detailedInfo());
+	//	EV << "******************** after forgeInterfaceTable() ********************" << endl;
+	//	EV << info << endl;
+	//}	
 }
 
 
@@ -354,7 +383,7 @@ void LocalFilter::initialize(int stage)
 		forgeInterfaceTable();
 		initializeGates();
 		// <A.S>
-		getNetworkParameters();
+		//getNetworkParameters();
 		
 		initializeAttacks();
 
@@ -371,10 +400,10 @@ void LocalFilter::getNetworkParameters() {
             networkAddr = fc->getNetworkAddress();
             netmask = fc->getNetmask();
         }
-        else if (check_and_cast<IPv4NetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator")) != NULL) {
+        if (check_and_cast<IPv4NetworkConfigurator *> (getParentModule()->getParentModule()->getSubmodule("configurator")) != NULL) {
             //random IPs within all ranges will be generated
             networkAddr = "";
-            netmask = "";      
+            netmask = "";
         }
     }
     
@@ -447,6 +476,29 @@ void LocalFilter::handleMessage(cMessage* msg)
 
 				// make a hard copy of the carried packet (putReq will be destroyed)
 				carriedPacket = hardCopy((cPacket*)(carriedPacket));
+
+				/* //forge the sending data
+				forgeSendingData(carriedPacket);
+				direction = putReq->getDirection();
+				 //handle the carriedPacket
+				switch (direction) {
+				
+					case direction_t::TX: {
+					
+						cGate* arrivalGate;
+						arrivalGate = carriedPacket->getArrivalGate();
+						send(carriedPacket, coupledGates[arrivalGate]); 
+						break;
+						// call forgeSendingData!!!
+					
+					}
+					
+					case direction_t::RX: {
+						
+                      break;
+					}			
+				
+				}*/
 				
 				string outputGateOverallName;				
 				string outputGateName;
@@ -463,8 +515,6 @@ void LocalFilter::handleMessage(cMessage* msg)
 				// remove last char ']'
 				tokens[1].pop_back();
 				outputGateIndex = atoi(tokens[1].c_str());
-				
-				
 				outputGate = gate(outputGateName.c_str(), outputGateIndex);
 				send(carriedPacket, outputGate);
 			}
@@ -486,8 +536,7 @@ void LocalFilter::handleMessage(cMessage* msg)
 				delays.clear();
 			
 				// packet filter match
-				if (enabledConditionalAttacks[i]->matchPacketFilter(msg)) {		
-				    					
+				if (enabledConditionalAttacks[i]->matchPacketFilter(msg)) {							
 					enabledConditionalAttacks[i]->execute(&msg, generatedPackets, delays, delay);								
 					
 					// send the original packet if not dropped 
@@ -540,22 +589,30 @@ void LocalFilter::handleMessage(cMessage* msg)
 						}
 					}
 					
-					return;				
+					return;
+					
 				}
 				// packet filter does not match
 				else{
 					arrivalGate = msg->getArrivalGate();
 					send(msg, coupledGates[arrivalGate]);			
-				}	
+				}
+				
 			}
+
 			return;
-		}	
+		}
+		
+			
 		case command_t::NOATTACK: {
 			cGate* arrivalGate = msg->getArrivalGate();
 			send(msg, coupledGates[arrivalGate]);
 			return;
-		}		
+		}
+			
 	}
+	
+	// EV << "LocalFilter::handleMessage ended succesfully" << endl;
 }
 
 
@@ -593,6 +650,7 @@ void LocalFilter::forgeSendingData (cMessage* msg)
                 break;
             }
         }
+        
         inputGateId = inputGate->getId();
         
         // find the previous module (i.e. the module connected to the input gate)

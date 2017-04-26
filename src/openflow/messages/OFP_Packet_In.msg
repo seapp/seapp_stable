@@ -48,7 +48,7 @@ packet OFP_Packet_In extends Open_Flow_Message
 //    EthernetIIFrame frame;
     oxm_basic_match match;
 //   	oxm_tlv tlv[];
-//    uint8_t data[0];        // Ethernet frame, halfway through 32-bit word,
+//    uint8_t data[0];      // Ethernet frame, halfway through 32-bit word,
                             // so the IP header is 32-bit aligned.  The
                             // amount of data is inferred from the length
                             // field in the header.  Because of padding,

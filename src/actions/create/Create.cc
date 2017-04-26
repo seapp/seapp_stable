@@ -25,7 +25,6 @@
 //A.S
 #include "ApplicationPacket_m.h"
 #include "SendApplicationPacket_m.h"
-#include "MeasurementData_m.h"
 
 CreateInfo::CreateInfo()
 { 
@@ -62,7 +61,7 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 					*packet = (cPacket*) (new TrafficLightCmd());
 					break;
 				}
-				//A.S
+				// <A.S>
 				case type_t::APPLICATION_PACKET: {
 					*packet = (cPacket*) (new ApplicationPacket());
 					break;
@@ -70,11 +69,6 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 				case type_t::SEND_APPLICATION_PACKET: {
 					*packet = (cPacket*) (new SendApplicationPacket());
 					break;
-				}
-				
-				case type_t::MEASUREMENT_DATA: {
-				    *packet = (cPacket*) (new MeasurementData());  
-				    break;
 				}
 				
 				// in general, INET has not well structured packets of layer 5
@@ -85,6 +79,7 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 			}		
             // <A.S>
             (*packet)->setByteLength(1);	
+            (*packet)->setTimestamp(simTime());
             	
 			(*packet)->addPar("isFiltered");
 			(*packet)->par("isFiltered").setBoolValue(true);
@@ -222,13 +217,6 @@ void Create::buildNewPacket(cPacket** packet, int layer, type_t type) const
 					break;
 				}
 				
-				// <A.S>
-				case type_t::MEASUREMENT_DATA: {
-				    (*packet)->setKind(TCP_C_SEND);
-				    controlInfo = new TCPSendCommand();
-				    (*packet)->setControlInfo(controlInfo);
-				    break;
-				}
 				// TODO add here the code to set other control infos for layer 5
 			}	
 		
@@ -460,10 +448,6 @@ type_t Create::getType (int layer, string typeCode)
 			if (typeCode == "1001" ) {
 				return type_t::SEND_APPLICATION_PACKET;
 			}
-			if (typeCode == "1002") {
-			    return type_t::MEASUREMENT_DATA;
-			}
-
 		}
 		
 		// layer 4		
@@ -593,8 +577,9 @@ void Create::execute(cPacket **packet)
 	setParameterRecursively(*packet, "isFiltered", true);
 	
 	// <A.S>
-	if (strcmp((*packet)->getOwner()->getName(), "globalFilter") == 0)
+	if (strcmp((*packet)->getOwner()->getName(), "globalFilter") == 0) {
 		setParameterRecursively(*packet, "fromGlobalFilter", true);
+    } 
 }
 
 

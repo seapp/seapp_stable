@@ -157,5 +157,6 @@ string getValueType(string value);
 bool isControlInfo(const string layer);
 // <A.S>
 int generateRandomIntValue(int a, int b);
-
+// <A.S>
+double generateRandomDblValue(double a);
 #endif

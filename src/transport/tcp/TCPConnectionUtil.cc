@@ -242,6 +242,7 @@ void TCPConnection::sendToIP(TCPSegment *tcpseg)
         tcpseg->setControlInfo(controlInfo);
         
         tcpMain->send(tcpseg, "ipOut");
+        
     }
     else
     {

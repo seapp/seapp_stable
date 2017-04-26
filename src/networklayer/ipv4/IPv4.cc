@@ -47,6 +47,9 @@ Define_Module(IPv4);
 simsignal_t IPv4::completedARPResolutionSignal = registerSignal("completedARPResolution");
 simsignal_t IPv4::failedARPResolutionSignal = registerSignal("failedARPResolution");
 
+// <A.S>
+simsignal_t IPv4::hopsSignal = registerSignal("hops");
+
 void IPv4::initialize(int stage)
 {
     if (stage == 0)
@@ -141,7 +144,6 @@ void IPv4::endService(cPacket *packet)
         const InterfaceEntry *fromIE = getSourceInterfaceFrom(packet);
         if(fromIE == nullptr)
         	opp_error("NULLPTR");
-        
         
         if (dynamic_cast<ARPPacket *>(packet))
             handleIncomingARPPacket((ARPPacket *)packet, fromIE);
@@ -689,12 +691,19 @@ cPacket *IPv4::decapsulate(IPv4Datagram *datagram)
     controlInfo->setInterfaceId(fromIE ? fromIE->getInterfaceId() : -1);
     controlInfo->setTimeToLive(datagram->getTimeToLive());
 
+    // <A.S>
+    std::string moduleName = getFullPath().c_str();
+    if (moduleName.find("DSO")!=std::string::npos || moduleName.find("RTU")!= std::string::npos) {
+        int hopNum = defaultTimeToLive - datagram->getTimeToLive();
+        emit(hopsSignal, hopNum);
+    }
+
     // original IPv4 datagram might be needed in upper layers to send back ICMP error message
     controlInfo->setOrigDatagram(datagram);
 
     // attach control info
     packet->setControlInfo(controlInfo);
-
+   
     return packet;
 }
 

@@ -10,6 +10,8 @@
 #include <algorithm>
 #include "IRoutingTable.h"
 #include "IInterfaceTable.h"
+#include "TCPSegment.h"
+#include "UDPPacket.h"
 #include "IPv4Datagram.h"
 #include "InterfaceEntry.h"
 #include "IPv4InterfaceData.h"
@@ -170,7 +172,7 @@ void Forwarding::receiveSignal(cComponent *src, simsignal_t id, cObject *obj)
             Open_Flow_Message *of_msg = wrapper->msg;
             OFP_Packet_In *packet_in = (OFP_Packet_In *) of_msg;
             uint32_t buffer_id = packet_in->getBuffer_id();
-
+            
             MACAddress src_mac;
             MACAddress dst_mac;
             IPv4Address dst_ip;
@@ -226,7 +228,7 @@ void Forwarding::receiveSignal(cComponent *src, simsignal_t id, cObject *obj)
                                 continue;
 
                             cTopology::Node *atNode = topo_forw.getNode(j);
-                            //<A.S>
+                            // <A.S>
                             if (atNode->getModule() == NULL)
                                 continue;
                             // Only choose nodes which have shortest path to destination node
@@ -246,9 +248,9 @@ void Forwarding::receiveSignal(cComponent *src, simsignal_t id, cObject *obj)
                             outputGateId = atNode->getPath(0)->getLocalGate()->getIndex();
                             uint32_t outport = outputGateId;
                             EV << "--------------------------------------";
-                            EV << "shortest path for : " << atNode->getModule()->getFullName() << endl;
+                            EV << "shortest path from : " << atNode->getModule()->getFullName() << endl;
                             EV << outport << endl;
-                            EV << "remote node: "<< atNode->getPath(0)->getRemoteNode()->getModule()->getFullName() << endl;
+                            ev << "remote node: "<< atNode->getPath(0)->getRemoteNode()->getModule()->getFullName() << endl;
                             nextNode = atNode->getPath(0)->getRemoteNode();
 
                             connID_outport.push_back(std::pair<int, uint32_t> (nodeInfo[j].connID, outport));
@@ -262,26 +264,49 @@ void Forwarding::receiveSignal(cComponent *src, simsignal_t id, cObject *obj)
                     reverse_iterator<iter> rev_end(begin);
                     reverse_iterator<iter> rev_iterator(end);
 //                    std::map<int, uint32_t>::reverse_iterator i_last = connID_outport.begin();
+
                     while (rev_iterator!=rev_end)
                     {
                         oxm_basic_match *match = new oxm_basic_match();
                         if (buffer_id == OFP_NO_BUFFER)
                         {
-
-                            //match->OFB_IN_PORT = packet_in->getEncapsulatedPacket()->getArrivalGate()->getIndex();
+                            match->wildcards = OFPFW_IN_PORT;
                             match->OFB_ETH_SRC = dynamic_cast<EthernetIIFrame *>(packet_in->getEncapsulatedPacket())->getSrc();
                             match->OFB_ETH_DST = dynamic_cast<EthernetIIFrame *>(packet_in->getEncapsulatedPacket())->getDest();
                             match->OFB_ETH_TYPE = dynamic_cast<EthernetIIFrame *>(packet_in->getEncapsulatedPacket())->getEtherType();
-                            match->wildcards = OFPFW_IN_PORT;
                         } else
                         {
-
-                            //match->OFB_IN_PORT = packet_in->getMatch().OFB_IN_PORT;
                             match->OFB_ETH_SRC = packet_in->getMatch().OFB_ETH_SRC;
                             match->OFB_ETH_DST = packet_in->getMatch().OFB_ETH_DST;
                             match->OFB_ETH_TYPE = packet_in->getMatch().OFB_ETH_TYPE;
                             match->wildcards = OFPFW_IN_PORT;
                         }
+                        
+                        EthernetIIFrame *eth_pkt = dynamic_cast<EthernetIIFrame *>(packet_in->getEncapsulatedPacket());
+                        IPv4Datagram *ip_pkt = dynamic_cast<IPv4Datagram *>(eth_pkt->getEncapsulatedPacket());
+                        
+		                if (ip_pkt != NULL) {
+		                    match->OFB_IPV4_DST = ip_pkt->getDestAddress();
+		                	match->OFB_IPV4_SRC = ip_pkt->getSrcAddress();
+		                	match->OFB_IP_PROTO = ip_pkt->getTransportProtocol();	  
+		                			    	
+		                	if (ip_pkt->getTransportProtocol() == 6) { //TCP packet
+		                		TCPSegment *tcp_packet = dynamic_cast<TCPSegment *>(ip_pkt->getEncapsulatedPacket());
+					            if(tcp_packet != NULL) {
+						            match->NW_DST = tcp_packet->getDestPort();
+						            match->NW_SRC = tcp_packet->getSrcPort();
+					            }
+		                	}
+		                	else if (ip_pkt->getTransportProtocol() == 17) { /* UDP packet */
+		                		UDPPacket *udp_packet = dynamic_cast<UDPPacket *>(ip_pkt->getEncapsulatedPacket());
+		                		if (udp_packet != NULL) {
+		                			match->NW_DST = udp_packet->getDestinationPort();
+		                			match->NW_SRC = udp_packet->getSourcePort();
+		                		}
+		                	}
+		                	else { }	
+		                }
+		                
 //                        EV << "nodeinfo.connid: " << nodeInfo[j].connID<< "connID: " << connID << endl;
 //                        controller->sendFlowModMessage(OFPFC_ADD, match, outport, nodeInfo[j].connID);
 //                        if (nodeInfo[j].connID == connID)
@@ -289,7 +314,7 @@ void Forwarding::receiveSignal(cComponent *src, simsignal_t id, cObject *obj)
                         
                         controller->sendFlowModMessage(OFPFC_ADD, match, rev_iterator->second, rev_iterator->first);
                         if (rev_iterator->first == connID)
-                            controller->sendPacket(buffer_id, packet_in, rev_iterator->second, connID);
+                            controller->sendPacket(buffer_id, packet_in, rev_iterator->second, connID); 
                         rev_iterator++;
                     }
                     connID_outport.clear(); 
@@ -300,7 +325,6 @@ void Forwarding::receiveSignal(cComponent *src, simsignal_t id, cObject *obj)
             }
             
             if (routeFound == 0) {
-                std::cout<< "edew mapoinw????\n";
                 controller->floodPacket(buffer_id, packet_in, connID);
             }
         }
@@ -338,6 +362,7 @@ bool Forwarding::processARPPacket(OFP_Packet_In *packet_in, int connID) {
     oxm_basic_match *match = new oxm_basic_match();
     ARPPacket *arpPacket;
     EthernetIIFrame *frame;
+    
     if (packet_in->getBuffer_id() == OFP_NO_BUFFER) {
         frame = check_and_cast<EthernetIIFrame *>(packet_in->getEncapsulatedPacket());
         if(frame!=NULL){

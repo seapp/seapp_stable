@@ -33,10 +33,11 @@ Variable::Variable(const Variable& obj)
 
 Variable::~Variable()
 {
+    delete this;
 }
 
 
-Variable Variable::operator+(const Variable& obj) const
+Variable* Variable::operator+(const Variable& obj) const
 {	
 	string rValue;
 	variable_t rType;
@@ -45,10 +46,10 @@ Variable Variable::operator+(const Variable& obj) const
 		opp_error("[Variable Variable::operator+(const Variable&)] Error, type mismatch");
 	}
 	
-	switch(type){
+	switch(type) {
 
 		case variable_t::NUMBER:{
-			rValue = to_string(double(*this) + double(obj));
+			rValue = to_string(double(*this) + (double)obj);
 			rType = variable_t::NUMBER;
 			break;
 		}
@@ -64,12 +65,11 @@ Variable Variable::operator+(const Variable& obj) const
 		}
 		
 	}	
-	
-	return Variable(rValue, rType);
+
+	return new Variable(rValue, rType);
 }
 
-
-Variable Variable::operator+(const int number) const
+Variable* Variable::operator+(const int number) const
 {	
 	string rValue;
 
@@ -79,7 +79,7 @@ Variable Variable::operator+(const int number) const
 
 	rValue = to_string(double(*this) + (double)number);
 
-	return Variable(rValue, variable_t::NUMBER);
+	return new Variable(rValue, variable_t::NUMBER);
 }
 
 
@@ -89,7 +89,8 @@ Variable& Variable::operator++()
 	switch(type){
 
 		case variable_t::NUMBER:{ 
-			*this = *this + 1 ;
+			//*this = *this + 1;
+			value = to_string (double(*this) + 1 );
 			break;
 		}
 			
@@ -110,7 +111,7 @@ Variable& Variable::operator++(int)
 }
 
 
-Variable Variable::operator-(const Variable& obj) const
+Variable* Variable::operator-(const Variable& obj) const
 {	
 	string rValue;
 	variable_t rType;
@@ -132,8 +133,7 @@ Variable Variable::operator-(const Variable& obj) const
 		}
 
 	}	
-	
-	return Variable(rValue, rType);
+	return new Variable(rValue, rType);
 }
 
 
@@ -162,7 +162,7 @@ Variable& Variable::operator--(int)
 }
 
 
-Variable Variable::operator*(const Variable& obj) const
+Variable* Variable::operator*(const Variable& obj) const
 {
 	string rValue;
 
@@ -183,12 +183,11 @@ Variable Variable::operator*(const Variable& obj) const
 		}
 
 	}	
-	
-	return Variable(rValue, variable_t::NUMBER);
+	return new Variable(rValue, variable_t::NUMBER);
 }
 
 
-Variable Variable::operator/(const Variable& obj) const
+Variable* Variable::operator/(const Variable& obj) const
 {
 	string rValue;
 
@@ -213,12 +212,12 @@ Variable Variable::operator/(const Variable& obj) const
 		}
 
 	}
-	
-	return Variable(rValue, variable_t::NUMBER);
+
+	return new Variable(rValue, variable_t::NUMBER);
 }
 
 
-Variable Variable::operator%(const Variable& obj) const
+Variable* Variable::operator%(const Variable& obj) const
 {
 	string rValue;
 
@@ -238,8 +237,8 @@ Variable Variable::operator%(const Variable& obj) const
 		}
 
 	}	
-	
-	return Variable(rValue, variable_t::NUMBER);
+
+	return new Variable(rValue, variable_t::NUMBER);
 }
 
 
@@ -261,8 +260,10 @@ Variable& Variable::operator+=(const Variable& obj)
 
 	switch(type){
 
-		case variable_t::NUMBER:{		
-			*this = *this + obj;
+		case variable_t::NUMBER:{	
+			// <A.S>
+			value = to_string( double(*this) + double(obj) );
+			//*this = *this + obj;
 			break;
 		}
 			
@@ -313,7 +314,9 @@ Variable& Variable::operator*=(const Variable& obj)
 	switch(type){
 
 		case variable_t::NUMBER:{
-			*this = *this * obj;
+			// <A.S>
+			value = to_string (double (*this) * double(obj));
+			//*this = *this * obj;
 			break;
 		}
 			
@@ -336,7 +339,9 @@ Variable& Variable::operator/=(const Variable& obj)
 	switch(type){
 
 		case variable_t::NUMBER:{ 
-			*this = *this / obj;
+			// <A.S>
+			value = to_string (double (*this) / double(obj));
+			//*this = *this / obj;
 			break;
 		}
 			
@@ -359,7 +364,9 @@ Variable& Variable::operator%=(const Variable& obj)
 	switch(type){
 
 		case variable_t::NUMBER:{
-			*this = *this % obj;
+			// <A.S>
+			value = to_string (int (*this) % int(obj));
+			//*this = *this % obj;
 			break;
 		}
 			

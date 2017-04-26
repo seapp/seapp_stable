@@ -7,9 +7,9 @@
 
 #include "openflow.h"
 #include "Open_Flow_Message_m.h"
+#include "OF_Wrapper.h"
 #include "OFP_Packet_In_m.h"
 #include "OFP_Packet_Out_m.h"
-#include "OF_Wrapper.h"
 #include "OFP_Flow_Mod_m.h"
 #include "OFP_Features_Reply_m.h"
 #include "OFP_Flow_Removed_m.h"
@@ -17,14 +17,17 @@
 #include "OFP_Flow_Stats_Reply_m.h"
 #include "OFP_Echo_Reply_m.h"
 #include "OFP_Port_Status_m.h"
+#include "OFP_Error_Msg_m.h"
 
 #define MSGKIND_CONNECT  0
 #define MSGKIND_SEND     1
 #define MSGKIND_FLOW_ENTRY_TIMER 2
 
 
-
 Define_Module(OFA_switch);
+
+simsignal_t OFA_switch::fullFlowTableSignal = registerSignal("fullFlowTable");
+simsignal_t OFA_switch::rttSignal = registerSignal("myRtt");
 
 OFA_switch::OFA_switch() {}
 
@@ -32,9 +35,11 @@ OFA_switch::~OFA_switch() {}
 
 void OFA_switch::initialize()
 {
+    fullTable = false;
+    
     cModule *ITModule = getParentModule()->getSubmodule("buffer");
     buffer = check_and_cast<Buffer *>(ITModule);
-
+    
     getParentModule()->subscribe("NF_NO_MATCH_FOUND",this);
     getParentModule()->subscribe("NF_PORT_STATUS", this);
     
@@ -63,7 +68,11 @@ void OFA_switch::handleMessage(cMessage *msg) {
         if (msg->getKind()==MSGKIND_FLOW_ENTRY_TIMER) { //flow expires
             oxm_basic_match *match = (oxm_basic_match *) msg->getContextPointer();
             sendFlowRemovedMesagge(match); //inform controller
-            flow_table->deleteEntry(match); //delete the flow entry from the flow table         
+            bool isEmpty = flow_table->deleteEntry(match); //delete the flow entry from the flow table
+            if (isEmpty) {
+                fullTable = false;
+                emit(fullFlowTableSignal, 0);
+            }         
         }
         else {
             handleTimer(msg);
@@ -211,6 +220,7 @@ void OFA_switch::handlePacket() {
     packetIn->setReason(OFPR_NO_MATCH);
 
     packetIn->setByteLength(1);
+    packetIn->setTimestamp(simTime());
 
     if (par("sendCompletePacket").boolValue()==true || buffer->isfull()) {
         // send full packet with packet-in message
@@ -249,13 +259,11 @@ void OFA_switch::connect() {
     const char *connectAddress = par("connectAddress");
     int connectPort = par("connectPort");
 
-    /*
     if (getParentModule()->getParentModule()->getSubmodule("controller") != NULL) {
         // multiple controllers; full path is needed for connect address
         connectAddress = getParentModule()->getParentModule()->getSubmodule("controller")->getFullPath().c_str();
-
     }
-    */
+    
     socket.connect(IPvXAddressResolver().resolve(connectAddress), connectPort);
 }
 
@@ -265,6 +273,9 @@ void OFA_switch::handlePacketOutMessage(Open_Flow_Message *of_msg) {
     EV << "OFA_switch::handlePacketOutMessage" << endl;
     OFP_Packet_Out *packet_out_msg = (OFP_Packet_Out *) of_msg;
 
+    simtime_t rtt = simTime() - packet_out_msg->getTimestamp();
+    emit(rttSignal, rtt);
+    
     uint32_t buffer_id = packet_out_msg->getBuffer_id();
     uint32_t in_port = packet_out_msg->getIn_port();
     unsigned int actions_size = packet_out_msg->getActionsArraySize();
@@ -334,7 +345,7 @@ void OFA_switch::handleFlowModMessage(Open_Flow_Message *of_msg) {
         case OFPFC_DELETE: {
             flow_table->deleteFlowTable();
             OF_Wrapper *wrapper = new OF_Wrapper();
-            //emit(NF_PORT_STATUS, wrapper);
+            emit(NF_PORT_STATUS, wrapper);
             break;
         }
         default:
@@ -344,7 +355,7 @@ void OFA_switch::handleFlowModMessage(Open_Flow_Message *of_msg) {
 
 void OFA_switch::addNewFlowEntry(OFP_Flow_Mod *flow_mod_msg) {
     oxm_basic_match *match = &flow_mod_msg->getMatch();
-
+    
     // Construct unique name for flow entry timeout message
     ofp_action_output actions[1];
     entry_data *data = new entry_data();
@@ -371,37 +382,57 @@ void OFA_switch::addNewFlowEntry(OFP_Flow_Mod *flow_mod_msg) {
     prior->priority = priority;
     data->prior = prior;
     
-    //add new entry in the flow table
-    flow_table->addEntry(match, data);
+    //add new entry in the flow table if does not exist
+    
+    if (!flow_table->lookup(match)) {
+        bool newEntry = flow_table->addEntry(match, data);
+        if (newEntry) {
+            oxm_basic_match *copy = new oxm_basic_match();
 
-    oxm_basic_match *copy = new oxm_basic_match();
+            copy->OFB_ETH_DST = match->OFB_ETH_DST;
+            copy->OFB_ETH_SRC = match->OFB_ETH_SRC;
+            copy->OFB_ETH_TYPE = match->OFB_ETH_TYPE;
+            copy->OFB_IN_PORT = match->OFB_IN_PORT;
+            copy->OFB_IPV4_DST = match->OFB_IPV4_DST;
+            copy->OFB_IPV4_SRC = match->OFB_IPV4_SRC;
+            copy->OFB_IP_PROTO = match->OFB_IP_PROTO;
+            copy->NW_DST = match->NW_DST;
+            copy->NW_SRC = match->NW_SRC;
+            copy->wildcards = match->wildcards;
 
-    copy->OFB_ETH_DST = match->OFB_ETH_DST;
-    copy->OFB_ETH_SRC = match->OFB_ETH_SRC;
-    copy->OFB_ETH_TYPE = match->OFB_ETH_TYPE;
-    copy->OFB_IN_PORT = match->OFB_IN_PORT;
-    copy->OFB_IPV4_DST = match->OFB_IPV4_DST;
-    copy->OFB_IPV4_SRC = match->OFB_IPV4_SRC;
-    copy->OFB_IP_PROTO = match->OFB_IP_PROTO;
-    copy->NW_DST = match->NW_DST;
-    copy->NW_SRC = match->NW_SRC;
-    copy->wildcards = match->wildcards;
+            std::stringstream timerName;
+            timerName << "sMac:" << copy->OFB_ETH_SRC;
+            timerName << ", dMac:" << copy->OFB_ETH_DST;
+            timerName << ", iPort:" << copy->OFB_IN_PORT;
+            timerName << ", eType:" << copy->OFB_ETH_TYPE;
+            timerName << ", dIp:" << copy->OFB_IPV4_DST;
+            timerName << ", sIp:" << copy->OFB_IPV4_SRC;
+            timerName << ", dstPort:" << copy->NW_DST;
+            timerName << ", srcPort:" << copy->NW_SRC;
 
-    std::stringstream timerName;
-    timerName << "sMac:" << copy->OFB_ETH_SRC;
-    timerName << ", dMac:" << copy->OFB_ETH_DST;
-    timerName << ", iPort:" << copy->OFB_IN_PORT;
-    timerName << ", eType:" << copy->OFB_ETH_TYPE;
-    timerName << ", dIp:" << copy->OFB_IPV4_DST;
-    timerName << ", sIp:" << copy->OFB_IPV4_SRC;
-    timerName << ", dstPort:" << copy->NW_DST;
-    timerName << ", srcPort:" << copy->NW_SRC;
-
-	// set the timer for flow expiration
-    cMessage *timeoutmsg = new cMessage(timerName.str().c_str());
-    timeoutmsg->setKind(MSGKIND_FLOW_ENTRY_TIMER);
-    timeoutmsg->setContextPointer(copy);
-    scheduleAt(simTime()+timeout, timeoutmsg);
+	        // set the timer for flow expiration
+            cMessage *timeoutmsg = new cMessage(timerName.str().c_str());
+            timeoutmsg->setKind(MSGKIND_FLOW_ENTRY_TIMER);
+            timeoutmsg->setContextPointer(copy);
+            scheduleAt(simTime()+timeout, timeoutmsg);
+        }
+        else { //full flow table send error message to controller
+            OFP_Error_Msg *error_msg = new OFP_Error_Msg("OFPT_ERROR_MSG");
+            error_msg->getHeader().version = OFP_VERSION;
+            error_msg->getHeader().type = OFPT_ERROR;
+            error_msg->setType(OFPET_FLOW_MOD_FAILED);
+            error_msg->setCode(OFPFMFC_ALL_TABLES_FULL);
+            
+            error_msg->setByteLength(1);
+            error_msg->setKind(TCP_C_SEND);
+	        socket.send(error_msg);
+        
+            if (!fullTable) {
+                fullTable = true;
+                emit(fullFlowTableSignal, 1);
+            }
+        }
+    }
 }
 
 

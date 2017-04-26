@@ -36,7 +36,7 @@ protected:
     virtual void handleMessage(cMessage *msg);
     void sendPacketOut();
     void processQueuedMsg(cMessage *data_msg);
-
+    void finish();
 private:
     EthernetIIFrame *frameBeingReceived;
     std::vector<int> port_vector;
@@ -53,6 +53,8 @@ private:
     bool sent = false;
     int droppedPkt;
     static simsignal_t droppedPktSignal;
+    int fwd_pkts;
+    string name;
 };
 
 

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<configuration>
+
+	<Physical>
+
+		<Attack>
+			<start_time>20</start_time>
+			<node>6</node>
+
+			<action>
+				<name>Disable</name>
+			</action>
+		</Attack>
+
+	</Physical>
+
+</configuration>
